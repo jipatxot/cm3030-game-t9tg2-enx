@@ -1,6 +1,5 @@
 namespace DefaultNamespace;
 
-using System;
 using UnityEngine;
 
 /// <summary>
