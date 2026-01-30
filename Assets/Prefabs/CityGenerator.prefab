@@ -1,0 +1,444 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &61842702023637801
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 117582784015320494}
+  m_Layer: 0
+  m_Name: FurnitureRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &117582784015320494
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 61842702023637801}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8902459092519343449}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &236173116267570799
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8902459092519343449}
+  - component: {fileID: 2774901629814351797}
+  - component: {fileID: 3425204403014891764}
+  - component: {fileID: 8722170620343012972}
+  - component: {fileID: 9092683106625355253}
+  m_Layer: 0
+  m_Name: CityGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8902459092519343449
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 236173116267570799}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.15934, y: 0.83835, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5826722780395082820}
+  - {fileID: 8009661217460233189}
+  - {fileID: 1574039548202547828}
+  - {fileID: 117582784015320494}
+  - {fileID: 744472469349602069}
+  - {fileID: 3848583681074442640}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2774901629814351797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 236173116267570799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 794023f4d46362b4ab2b574f9d60d429, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CityInput
+  roads: {fileID: 3425204403014891764}
+--- !u!114 &3425204403014891764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 236173116267570799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16c000d8cda956b4d9cb3e6dda9713ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoadPathGenerator
+  walkableLayerName: Walkable
+  width: 44
+  height: 44
+  tileSize: 1
+  seed: 0
+  useRandomSeed: 1
+  minBlockSize: 4
+  maxBlockSize: 7
+  roadWidth: 1
+  pathChance: 0.45
+  minShortcutLen: 10
+  maxShortcutLen: 28
+  shortcutAttemptsDiv: 180
+  extraStreetChance: 0.12
+  parkChancePerBlock: 0.18
+  bigLotChancePerBlock: 0.22
+  minZonePaddingFromRoad: 1
+  roadRoot: {fileID: 5826722780395082820}
+  roadTilePrefab: {fileID: 6775140870591654844, guid: e785fd5cd4e210b41ad3ea656d4242b7, type: 3}
+  pathTilePrefab: {fileID: 4444746700363190359, guid: ad201be0bad1ff6428542f9d4fabc958, type: 3}
+  clearBeforeSpawn: 1
+  centerOnCity: 1
+  worldOffset: {x: 0, y: 0, z: 0}
+  yOffset: 0.05
+  groundRenderer: {fileID: 0}
+  autoFitToGround: 1
+  paddingTiles: 2
+  generateOnStart: 1
+  rotateTilesFlat: 1
+  tileXRotation: 90
+--- !u!114 &8722170620343012972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 236173116267570799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a3cd8acfd006944cbb2e4255ec11d32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  roads: {fileID: 3425204403014891764}
+  zoneRoot: {fileID: 8009661217460233189}
+  parkTilePrefab: {fileID: 8057168678372892629, guid: edb520a747f4f3546bac24cf6659e913, type: 3}
+  bigLotTilePrefab: {fileID: 3172534219739205578, guid: 721f8230f8b36dd429039320b924aae1, type: 3}
+  buildingLotTilePrefab: {fileID: 5162135054170898393, guid: 50bc975c1c214674a9859fe3b3e5c07a, type: 3}
+  clearBeforeSpawn: 1
+  coverAllNonRoadNonPath: 1
+  expandZonesToRoads: 1
+  expandRadius: 1
+  walkableLayerName: Walkable
+  obstacleLayerName: IgnoreNavMesh
+  treePrefab: {fileID: 7108054725207214739, guid: 039b68c60fa19a548864bbee8fd47fae, type: 3}
+  treeChance: 0.18
+  treeYRotationRandom: 360
+  roadEdgeBias: 0.55
+  parkCenterBias: 0.45
+  distSearchRadius: 8
+  rotateTilesFlat: 1
+  tileXRotation: 90
+--- !u!114 &9092683106625355253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 236173116267570799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 498239e073497ee4f848d2b294b6c768, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  roads: {fileID: 3425204403014891764}
+  furnitureRoot: {fileID: 117582784015320494}
+  groundCollider: {fileID: 0}
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 8
+  snapStartHeight: 200
+  streetLampPrefab: {fileID: 6682954109632188068, guid: dd2b1206ba369a14bbde6cb57c864dab, type: 3}
+  trafficLightPrefab: {fileID: 6682954109632188068, guid: 54d3c4970c886dc4c822c90154ddbe6f, type: 3}
+  zebraCrossingPrefab: {fileID: 5773736274731465902, guid: e3a9c12e8a72d4d419757708f355c75c, type: 3}
+  clearBeforeSpawn: 1
+  lampChance: 0.08
+  lampSpacingTiles: 18
+  lampSideOffset: 0.65
+  lampYOffset: 0.02
+  minTilesBetweenSignals: 18
+  signalCornerOffset: 0.75
+  signalYOffset: 0.02
+  spawnZebras: 1
+  zebraChancePerSide: 1
+  smallRoadZebraChancePerSide: 0.25
+  smallRoadSignalChance: 0.05
+  zebraInsetFromJunction: 0.18
+  zebraYOffset: 0.06
+  rotateZebrasFlat: 1
+  zebraXRotation: 90
+  createLampLitVolumes: 1
+  litAreaName: Lit
+  lampLitRadius: 12
+  lampLitHeight: 4
+  lampLitCenterY: 1
+  walkableLayerName: Walkable
+  obstacleLayerName: IgnoreNavMesh
+  forceZebrasWalkableLayer: 1
+  maxJunctionClusterSize: 200
+--- !u!1 &1532752718557234952
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 744472469349602069}
+  - component: {fileID: 444902835054619919}
+  - component: {fileID: 6857043045205770266}
+  m_Layer: 0
+  m_Name: NavMeshRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &744472469349602069
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1532752718557234952}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8902459092519343449}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &444902835054619919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1532752718557234952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshSurface
+  m_SerializedVersion: 0
+  m_AgentTypeID: 0
+  m_CollectObjects: 0
+  m_Size: {x: 16.336857, y: 10, z: 10}
+  m_Center: {x: 3.1684308, y: 2, z: 0}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 8
+  m_UseGeometry: 1
+  m_DefaultArea: 0
+  m_GenerateLinks: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 1
+  m_VoxelSize: 0.3
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 0}
+  m_BuildHeightMesh: 0
+--- !u!114 &6857043045205770266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1532752718557234952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6ea5bac37834f43bcef8cea0e20ab9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  roads: {fileID: 3425204403014891764}
+  surface: {fileID: 444902835054619919}
+--- !u!1 &2676799036642861556
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3848583681074442640}
+  m_Layer: 0
+  m_Name: MonstersRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3848583681074442640
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2676799036642861556}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8902459092519343449}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4013628017608550426
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1574039548202547828}
+  - component: {fileID: 590802420480837263}
+  m_Layer: 0
+  m_Name: BuildingsRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1574039548202547828
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4013628017608550426}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8902459092519343449}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &590802420480837263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4013628017608550426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88c93ebddfa8ab948b3f74ef7d48b46d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  roads: {fileID: 3425204403014891764}
+  buildingsRoot: {fileID: 1574039548202547828}
+  buildingPrefab: {fileID: 3162544653070869956, guid: 5d003bfdbf1d14e4fbaf7f5b7970eb97, type: 3}
+  buildChance: 0.22
+  maxBuildings: 120
+  scanStep: 1
+  clearBeforeSpawn: 1
+  paddingFromRoadTiles: 0
+  allow3x3: 1
+  allow2x2: 1
+  oneByOneFloors: {x: 1, y: 6}
+  bigFootprintFloors: {x: 1, y: 10}
+  fillPerTile: 0.9
+  floorHeight: 0.35
+  minHeight: 0.6
+  obstacleLayerName: IgnoreNavMesh
+  addNavMeshObstacle: 1
+  obstacleCarve: 1
+  carveMoveThreshold: 0.1
+  carveTimeToStationary: 0
+  addBoxCollider: 1
+--- !u!1 &5424921105882870031
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8009661217460233189}
+  m_Layer: 0
+  m_Name: ZonesRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8009661217460233189
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5424921105882870031}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8902459092519343449}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7119741131636097869
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5826722780395082820}
+  m_Layer: 0
+  m_Name: RoadsRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5826722780395082820
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7119741131636097869}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8902459092519343449}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
