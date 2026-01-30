@@ -6,14 +6,14 @@ Github Repo for cm3030-game-t9tg2-enx Game Development using Unity 6
 
 | Week | Phase   | Juan (Lead/Code) | Dianshi (Systems) | Agata (Design/UI) | Ionut (Assets) |
 |------|---------|------------------|------------------|------------------|---------------|
-| 1 | Setup   | - [ ] Set up GitHub repository<br>- [ ] Implement player movement | - [ ] Work on "Power Decay" timer logic | - [ ] Sketch the city layout<br>- [ ] Set up the Unity Scene | - [ ] Search for free sprite packs (player/city/enemy)<br>- [ ] Find sound effects (clicks, ambience hums) |
-| 2 | Core    | - [ ] Work on interaction mechanics (turning lights on/off) | - [ ] Work on "Game State" (active vs. game over) | - [ ] Build the basic level<br>- [ ] Implement camera logic | - [ ] Configure lighting settings (shadows/colors) |
+| 1 | Setup   | - [X] Set up GitHub repository<br>- [ ] Implement player movement | - [ ] Work on "Power Decay" timer logic | - [X] Sketch the city layout<br>- [X] Set up the Unity Scene | - [ ] Search for free sprite packs (player/city/enemy) comment: buildings and city randomly generated from in house elements<br>- [ ] Find sound effects (clicks, ambience hums) |
+| 2 | Core    | - [ ] Work on interaction mechanics (turning lights on/off) | - [ ] Work on "Game State" (active vs. game over) | - [ ] Build the basic level<br>- [X] Implement camera logic | - [ ] Configure lighting settings (shadows/colors) |
 | 3 | Enemies | - [ ] Work on player health and damage logic | - [ ] Work on enemy spawning logic (where they appear) | - [ ] Design HUD assets<br>- [ ] Implement UI manager (health bars) | - [ ] Import sprites<br>- [ ] Set up animations |
 | 4 | Review  | - [ ] Feedback and group review | - [ ] Feedback and group review | - [ ] Feedback and group review | - [ ] Feedback and group review |
-| 5 | Logic   | - [ ] Connect UI bars to player health logic | - [ ] Work on basic enemy movement (chasing player) | - [ ] Place buildings into the final scene | - [ ] Implement audio manager (play sounds on events) |
+| 5 | Logic   | - [ ] Connect UI bars to player health logic | - [ ] Work on basic enemy movement (chasing player) | - [X] Place buildings into the final scene | - [ ] Implement audio manager (play sounds on events) |
 | 6 | Buffer  | - [ ] Downtime / Catch-up | - [ ] Downtime / Catch-up | - [ ] Downtime / Catch-up | - [ ] Downtime / Catch-up |
 | 7 | Flow    | - [ ] Work on "Sunrise" (win) and "Death" (lose) events | - [ ] Implement difficulty scaling (decay speeds up) | - [ ] Create title, pause and credit screens | - [ ] Add final lighting effects (glow/atmosphere) |
-| 8 | Polish  | - [ ] Adjust movement speed and feel | - [ ] Adjust enemy speed and aggression | - [ ] Add city details (props/decorations) | - [ ] Adjust sound volumes (balance music/SFX) |
+| 8 | Polish  | - [ ] Adjust movement speed and feel | - [ ] Adjust enemy speed and aggression | - [X] Add city details (props/decorations) comment: trees, crossings added but need more detailing | - [ ] Adjust sound volumes (balance music/SFX) |
 | 9 | Testing | - [ ] Group playtesting | - [ ] Group playtesting | - [ ] Group playtesting | - [ ] Group playtesting |
 | 10 | Fixes  | - [ ] Fix movement bugs found in testing | - [ ] Adjust difficulty based on testing | - [ ] Fix UI bugs found in testing | - [ ] Add final sound effects (clicks/buttons) |
 | 11 | Final  | - [ ] Final code cleanup | - [ ] Final check of all scripts | - [ ] Final check of scene/level | - [ ] Check asset licenses<br>- [ ] Create credits list |
