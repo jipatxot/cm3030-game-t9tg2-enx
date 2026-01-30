@@ -6,7 +6,7 @@ Github Repo for cm3030-game-t9tg2-enx Game Development using Unity 6
 
 | Week | Phase   | Juan (Lead/Code) | Dianshi (Systems) | Agata (Design/UI) | Ionut (Assets) |
 |------|---------|------------------|------------------|------------------|---------------|
-| 1 | Setup   | - [X] Set up GitHub repository<br>- [ ] Implement player movement | - [ ] Work on "Power Decay" timer logic | - [X] Sketch the city layout<br>- [X] Set up the Unity Scene | - [ ] Search for free sprite packs (player/city/enemy) comment: buildings and city randomly generated from in house elements<br>- [ ] Find sound effects (clicks, ambience hums) |
+| 1 | Setup   | - [X] Set up GitHub repository<br>- [ ] Implement player movement | - [ ] Work on "Power Decay" timer logic | - [X] Sketch the city layout<br>- [X] Set up the Unity Scene | - [ ] Search for free sprite packs (player/city/enemy) comment: buildings and city randomly generated from in house elements, monsters also<br>- [ ] Find sound effects (clicks, ambience hums) |
 | 2 | Core    | - [ ] Work on interaction mechanics (turning lights on/off) | - [ ] Work on "Game State" (active vs. game over) | - [ ] Build the basic level<br>- [X] Implement camera logic | - [ ] Configure lighting settings (shadows/colors) |
 | 3 | Enemies | - [ ] Work on player health and damage logic | - [ ] Work on enemy spawning logic (where they appear) | - [ ] Design HUD assets<br>- [ ] Implement UI manager (health bars) | - [ ] Import sprites<br>- [ ] Set up animations |
 | 4 | Review  | - [ ] Feedback and group review | - [ ] Feedback and group review | - [ ] Feedback and group review | - [ ] Feedback and group review |
