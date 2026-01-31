@@ -23,7 +23,7 @@ public class RoadPathGenerator : MonoBehaviour
     public int roadWidth = 1;
 
     [Header("Paths")]
-    [Range(0f, 1f)] public float pathChance = 0.45f;
+    [Range(0f, 1f)] public float pathChance = 0.40f;
     public int minShortcutLen = 10;
     public int maxShortcutLen = 28;
     public int shortcutAttemptsDiv = 180;
