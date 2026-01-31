@@ -9,28 +9,38 @@ public class CityBuildingPlacer : MonoBehaviour
     public GameObject buildingPrefab;
 
     [Header("Test run limits")]
-    [Range(0f, 1f)] public float buildChance = 0.22f;
-    public int maxBuildings = 120;
+    [Range(0f, 1f)] public float buildChance = 0.3f;
+    public int maxBuildings = 300;
     public int scanStep = 1;
 
     [Header("Spawn area")]
     public bool clearBeforeSpawn = true;
 
-    [Tooltip("Leave at 0 if you want buildings right up to roads. Set to 1 for a buffer.")]
-    public int paddingFromRoadTiles = 0;
+    [Header("Sidewalk")]
+    [Tooltip("World units. 0.25 means quarter of a tile if tileSize=1.")]
+    public float sidewalkInsetWorld = 0.25f;
 
     [Header("Footprints")]
-    public bool allow3x3 = true;
+    public bool allow1x1 = false;
     public bool allow2x2 = true;
+    public bool allow3x3 = true;
+    public bool allow4x4 = true;
+    public bool allow5x5 = true;
 
-    [Header("Heights (floors)")]
-    public Vector2Int oneByOneFloors = new Vector2Int(1, 6);
-    public Vector2Int bigFootprintFloors = new Vector2Int(1, 10);
+    [Header("Heights (floors) per footprint")]
+    public Vector2Int floors1x1 = new Vector2Int(1, 6);
+    public Vector2Int floors2x2 = new Vector2Int(2, 8);
+    public Vector2Int floors3x3 = new Vector2Int(3, 10);
+    public Vector2Int floors4x4 = new Vector2Int(3, 12);
+    public Vector2Int floors5x5 = new Vector2Int(4, 14);
 
     [Header("Building scale tuning")]
     [Range(0.6f, 1f)] public float fillPerTile = 0.90f;
     public float floorHeight = 0.35f;
     public float minHeight = 0.6f;
+
+    [Header("NavMesh obstacle sizing")]
+    public float obstacleInsetWorld = 0.4f;
 
     [Header("NavMesh blocking")]
     public string obstacleLayerName = "IgnoreNavMesh";
@@ -42,8 +52,13 @@ public class CityBuildingPlacer : MonoBehaviour
     [Header("Physics blocking")]
     public bool addBoxCollider = true;
 
+    [Header("Deterministic seed offset")]
+    public int seedOffset = 1000;
+
     bool[,] occupied;
     int obstacleLayer;
+
+    System.Random rng;
 
     void OnEnable()
     {
@@ -71,21 +86,26 @@ public class CityBuildingPlacer : MonoBehaviour
 
         occupied = new bool[w, h];
 
+        // Deterministic RNG for buildings, based on the world seed.
+        int baseSeed = Mathf.Max(1, roads.seed);
+        rng = new System.Random(unchecked(baseSeed + seedOffset));
+
         var candidates = new System.Collections.Generic.List<Vector2Int>(w * h);
 
         for (int y = 1; y < h - 1; y += Mathf.Max(1, scanStep))
         {
             for (int x = 1; x < w - 1; x += Mathf.Max(1, scanStep))
             {
-                if (Random.value > buildChance) continue;
+                if (NextFloat() > buildChance) continue;
                 if (IsBuildableCell(x, y))
                     candidates.Add(new Vector2Int(x, y));
             }
         }
 
+        // Fisher-Yates shuffle using the same seeded RNG.
         for (int i = 0; i < candidates.Count; i++)
         {
-            int j = Random.Range(i, candidates.Count);
+            int j = Rand(i, candidates.Count - 1);
             var tmp = candidates[i];
             candidates[i] = candidates[j];
             candidates[j] = tmp;
@@ -102,22 +122,39 @@ public class CityBuildingPlacer : MonoBehaviour
 
             if (occupied[x, y]) continue;
 
+            if (allow5x5 && CanPlaceFootprint(x, y, 5, 5))
+            {
+                PlaceCluster(x, y, 5, 5, floors5x5);
+                spawned++;
+                continue;
+            }
+
+            if (allow4x4 && CanPlaceFootprint(x, y, 4, 4))
+            {
+                PlaceCluster(x, y, 4, 4, floors4x4);
+                spawned++;
+                continue;
+            }
+
             if (allow3x3 && CanPlaceFootprint(x, y, 3, 3))
             {
-                PlaceCluster(x, y, 3, 3);
+                PlaceCluster(x, y, 3, 3, floors3x3);
                 spawned++;
                 continue;
             }
 
             if (allow2x2 && CanPlaceFootprint(x, y, 2, 2))
             {
-                PlaceCluster(x, y, 2, 2);
+                PlaceCluster(x, y, 2, 2, floors2x2);
                 spawned++;
                 continue;
             }
 
-            PlaceSingle(x, y);
-            spawned++;
+            if (allow1x1 && IsBuildableCell(x, y))
+            {
+                PlaceSingle(x, y);
+                spawned++;
+            }
         }
     }
 
@@ -125,23 +162,23 @@ public class CityBuildingPlacer : MonoBehaviour
     {
         MarkOccupied(gx, gy, 1, 1);
 
-        int floors = Random.Range(oneByOneFloors.x, oneByOneFloors.y + 1);
+        int floors = Rand(floors1x1.x, floors1x1.y);
 
-        float width = roads.tileSize * fillPerTile;
-        float depth = roads.tileSize * fillPerTile;
+        float width = FootprintWorld(1);
+        float depth = FootprintWorld(1);
         float height = Mathf.Max(minHeight, floors * floorHeight);
 
         SpawnOneBuilding(gx, gy, width, depth, height, floors);
     }
 
-    void PlaceCluster(int gx, int gy, int sx, int sy)
+    void PlaceCluster(int gx, int gy, int sx, int sy, Vector2Int floorsRange)
     {
         MarkOccupied(gx, gy, sx, sy);
 
-        int floors = Random.Range(bigFootprintFloors.x, bigFootprintFloors.y + 1);
+        int floors = Rand(floorsRange.x, floorsRange.y);
 
-        float width = roads.tileSize * sx * fillPerTile;
-        float depth = roads.tileSize * sy * fillPerTile;
+        float width = FootprintWorld(sx);
+        float depth = FootprintWorld(sy);
         float height = Mathf.Max(minHeight, floors * floorHeight);
 
         Vector3 pos = ClusterCenterWorld(gx, gy, sx, sy);
@@ -154,6 +191,15 @@ public class CityBuildingPlacer : MonoBehaviour
             go.transform.localScale = new Vector3(width, height, depth);
 
         PostProcessBuilding(go, width, depth, height);
+    }
+
+    float FootprintWorld(int tiles)
+    {
+        float raw = roads.tileSize * tiles * fillPerTile;
+        float inset = Mathf.Max(0f, sidewalkInsetWorld) * 2f;
+
+        float clamped = Mathf.Max(roads.tileSize * 0.2f, raw - inset);
+        return clamped;
     }
 
     Vector3 ClusterCenterWorld(int gx, int gy, int sx, int sy)
@@ -200,7 +246,11 @@ public class CityBuildingPlacer : MonoBehaviour
 
             obs.shape = NavMeshObstacleShape.Box;
             obs.center = new Vector3(0f, height * 0.5f, 0f);
-            obs.size = new Vector3(width, height, depth);
+
+            float ox = Mathf.Max(0.1f, width - obstacleInsetWorld * 2f);
+            float oz = Mathf.Max(0.1f, depth - obstacleInsetWorld * 2f);
+
+            obs.size = new Vector3(ox, height, oz);
 
             obs.carving = obstacleCarve;
             obs.carveOnlyStationary = false;
@@ -244,23 +294,7 @@ public class CityBuildingPlacer : MonoBehaviour
 
     bool IsBuildableCell(int x, int y)
     {
-        if (roads.Map[x, y] != RoadPathGenerator.CellType.Empty) return false;
-
-        if (paddingFromRoadTiles <= 0) return true;
-
-        int r = paddingFromRoadTiles;
-
-        for (int ix = x - r; ix <= x + r; ix++)
-        {
-            for (int iy = y - r; iy <= y + r; iy++)
-            {
-                if (ix < 0 || iy < 0 || ix >= roads.Width || iy >= roads.Height) continue;
-                if (roads.Map[ix, iy] == RoadPathGenerator.CellType.Road) return false;
-                if (roads.Map[ix, iy] == RoadPathGenerator.CellType.Path) return false;
-            }
-        }
-
-        return true;
+        return roads.Map[x, y] == RoadPathGenerator.CellType.BuildingLot;
     }
 
     void MarkOccupied(int gx, int gy, int sx, int sy)
@@ -276,11 +310,22 @@ public class CityBuildingPlacer : MonoBehaviour
         {
             var child = parent.GetChild(i);
 #if UNITY_EDITOR
-            if (!Application.isPlaying) DestroyImmediate(child.gameObject);
+            if (!UnityEngine.Application.isPlaying) DestroyImmediate(child.gameObject);
             else Destroy(child.gameObject);
 #else
             Destroy(child.gameObject);
 #endif
         }
+    }
+
+    float NextFloat()
+    {
+        return (float)rng.NextDouble();
+    }
+
+    int Rand(int minInclusive, int maxInclusive)
+    {
+        if (maxInclusive < minInclusive) return minInclusive;
+        return rng.Next(minInclusive, maxInclusive + 1);
     }
 }

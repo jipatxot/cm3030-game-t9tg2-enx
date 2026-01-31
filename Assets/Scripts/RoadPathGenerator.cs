@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static System.Net.Mime.MediaTypeNames;
+using System;
 
 public class RoadPathGenerator : MonoBehaviour
 {
@@ -32,15 +31,26 @@ public class RoadPathGenerator : MonoBehaviour
     [Header("Extra streets")]
     [Range(0f, 1f)] public float extraStreetChance = 0.12f;
 
-    [Header("Zones")]
+    [Header("Zones per block")]
     [Range(0f, 1f)] public float parkChancePerBlock = 0.18f;
     [Range(0f, 1f)] public float bigLotChancePerBlock = 0.22f;
-    public int minZonePaddingFromRoad = 1;
 
-    [Header("Spawn roads and paths")]
+    [Tooltip("Set this to 0. Sidewalk is handled by spawners, not by shrinking zones.")]
+    public int minZonePaddingFromRoad = 0;
+
+    [Header("Spawn roots")]
     public Transform roadRoot;
+    public Transform zoneRoot;
+
+    [Header("Tile prefabs")]
     public GameObject roadTilePrefab;
     public GameObject pathTilePrefab;
+    public GameObject parkTilePrefab;
+    public GameObject bigLotTilePrefab;
+    public GameObject buildingLotTilePrefab;
+    public GameObject boulevardMedianTilePrefab;
+
+    [Header("Clear")]
     public bool clearBeforeSpawn = true;
 
     [Header("Placement")]
@@ -54,13 +64,22 @@ public class RoadPathGenerator : MonoBehaviour
     public int paddingTiles = 2;
 
     [Header("Controls")]
-    public bool generateOnStart = true;
+    public bool generateOnStart = false;
 
-    [Header("Spawn rotation (fix for Quad tiles)")]
-    public bool rotateTilesFlat = true;   // set true if your tile prefabs are Unity Quad
+    [Header("Spawn rotation")]
+    public bool rotateTilesFlat = true;
     public float tileXRotation = 90f;
 
-    public enum CellType { Empty, Road, Path, Park, BigLot }
+    public enum CellType
+    {
+        Empty,
+        Road,
+        Path,
+        Park,
+        BigLot,
+        BuildingLot,
+        BoulevardMedian
+    }
 
     public CellType[,] Map { get; private set; }
     public int Width => width;
@@ -76,20 +95,33 @@ public class RoadPathGenerator : MonoBehaviour
             GenerateAndSpawn();
     }
 
-    // Convenience for other scripts.
     public void Generate() => GenerateAndSpawn();
 
     [ContextMenu("Generate And Spawn")]
     public void GenerateAndSpawn()
     {
-        if (!roadRoot || !roadTilePrefab || !pathTilePrefab)
+        if (!roadRoot || !zoneRoot)
         {
-            UnityEngine.Debug.LogError("Assign roadRoot, roadTilePrefab, pathTilePrefab.");
+            UnityEngine.Debug.LogError("Assign roadRoot and zoneRoot.");
+            return;
+        }
+
+        if (!roadTilePrefab || !pathTilePrefab || !parkTilePrefab || !bigLotTilePrefab || !buildingLotTilePrefab)
+        {
+            UnityEngine.Debug.LogError("Assign all tile prefabs: road, path, park, big lot, building lot.");
+            return;
+        }
+
+        if (boulevardMedianTilePrefab == null)
+        {
+            UnityEngine.Debug.LogError("Assign boulevardMedianTilePrefab.");
             return;
         }
 
         int s = useRandomSeed ? UnityEngine.Random.Range(1, int.MaxValue) : Mathf.Max(1, seed);
-        rng = new System.Random(s);
+        seed = s;
+        useRandomSeed = false;
+        rng = new System.Random(seed);
 
         walkableLayer = LayerMask.NameToLayer(walkableLayerName);
 
@@ -102,7 +134,9 @@ public class RoadPathGenerator : MonoBehaviour
         MarkZonesInsideBlocks();
         AddRoadToRoadShortcuts();
 
-        SpawnRoadAndPathTiles();
+        FillRemainingEmptyAsBuildingLot();
+
+        SpawnAllTiles();
 
         OnGenerated?.Invoke();
     }
@@ -124,6 +158,18 @@ public class RoadPathGenerator : MonoBehaviour
 
         Vector3 p = transform.position;
         transform.position = new Vector3(b.center.x, p.y, b.center.z);
+    }
+
+    void FillRemainingEmptyAsBuildingLot()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (Map[x, y] == CellType.Empty)
+                    Map[x, y] = CellType.BuildingLot;
+            }
+        }
     }
 
     void BuildPrimaryStreetGrid()
@@ -198,13 +244,29 @@ public class RoadPathGenerator : MonoBehaviour
 
                 if (x1 <= x0 || y1 <= y0) continue;
 
+                // If the interior strip is 1-tile wide in either direction, it is ALWAYS boulevard median.
+                bool isOneTileWideStrip = (x1 == x0) || (y1 == y0);
+
+                if (isOneTileWideStrip)
+                {
+                    for (int x = x0; x <= x1; x++)
+                    {
+                        for (int y = y0; y <= y1; y++)
+                        {
+                            if (Map[x, y] == CellType.Empty)
+                                Map[x, y] = CellType.BoulevardMedian;
+                        }
+                    }
+
+                    continue;
+                }
+
                 float r = NextFloat();
-                CellType zone = CellType.Empty;
+                CellType zone;
 
                 if (r < parkChancePerBlock) zone = CellType.Park;
                 else if (r < parkChancePerBlock + bigLotChancePerBlock) zone = CellType.BigLot;
-
-                if (zone == CellType.Empty) continue;
+                else zone = CellType.BuildingLot;
 
                 for (int x = x0; x <= x1; x++)
                 {
@@ -275,6 +337,7 @@ public class RoadPathGenerator : MonoBehaviour
             if (!InBounds(x, y)) break;
 
             if (Map[x, y] == CellType.Road) continue;
+            if (Map[x, y] == CellType.BoulevardMedian) continue;
 
             Map[x, y] = CellType.Path;
         }
@@ -389,24 +452,60 @@ public class RoadPathGenerator : MonoBehaviour
         );
     }
 
-    void SpawnRoadAndPathTiles()
+    void SpawnAllTiles()
     {
-        if (clearBeforeSpawn) ClearChildren(roadRoot);
+        if (clearBeforeSpawn)
+        {
+            ClearChildren(roadRoot);
+            ClearChildren(zoneRoot);
+        }
 
-        Quaternion rot = Quaternion.identity;
-        if (rotateTilesFlat)
-            rot = Quaternion.Euler(tileXRotation, 0f, 0f);
+        Quaternion rot = rotateTilesFlat ? Quaternion.Euler(tileXRotation, 0f, 0f) : Quaternion.identity;
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                if (Map[x, y] != CellType.Road && Map[x, y] != CellType.Path) continue;
+                GameObject prefab = null;
+                Transform parent = null;
 
-                var prefab = (Map[x, y] == CellType.Road) ? roadTilePrefab : pathTilePrefab;
+                var cell = Map[x, y];
+
+                if (cell == CellType.Road)
+                {
+                    prefab = roadTilePrefab;
+                    parent = roadRoot;
+                }
+                else if (cell == CellType.Path)
+                {
+                    prefab = pathTilePrefab;
+                    parent = roadRoot;
+                }
+                else if (cell == CellType.Park)
+                {
+                    prefab = parkTilePrefab;
+                    parent = zoneRoot;
+                }
+                else if (cell == CellType.BigLot)
+                {
+                    prefab = bigLotTilePrefab;
+                    parent = zoneRoot;
+                }
+                else if (cell == CellType.BuildingLot)
+                {
+                    prefab = buildingLotTilePrefab;
+                    parent = zoneRoot;
+                }
+                else if (cell == CellType.BoulevardMedian)
+                {
+                    prefab = boulevardMedianTilePrefab;
+                    parent = zoneRoot;
+                }
+
+                if (prefab == null || parent == null) continue;
+
                 Vector3 pos = GridToWorld(x, y);
-
-                var go = Instantiate(prefab, pos, rot, roadRoot);
+                var go = Instantiate(prefab, pos, rot, parent);
 
                 if (walkableLayer >= 0)
                     SetLayerRecursively(go, walkableLayer);

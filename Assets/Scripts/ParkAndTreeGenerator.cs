@@ -4,42 +4,45 @@ public class ParkAndTreeGenerator : MonoBehaviour
 {
     [Header("Refs")]
     public RoadPathGenerator roads;
-    public Transform zoneRoot;
-
-    [Header("Tiles")]
-    public GameObject parkTilePrefab;
-    public GameObject bigLotTilePrefab;
-    public GameObject buildingLotTilePrefab;
-
-    public bool clearBeforeSpawn = true;
-
-    [Header("Cover the whole plane")]
-    public bool coverAllNonRoadNonPath = true;
-
-    [Header("Expand zones outward into nearby empty cells")]
-    public bool expandZonesToRoads = true;
-    [Range(1, 4)] public int expandRadius = 1;
-
-    [Header("Layers")]
-    public string walkableLayerName = "Walkable";
-    public string obstacleLayerName = "IgnoreNavMesh";
+    public Transform treeRoot;
 
     [Header("Trees")]
     public GameObject treePrefab;
-    [Range(0f, 1f)] public float treeChance = 0.18f;
+    [Range(0f, 1f)] public float treeChance = 0.25f;
     public float treeYRotationRandom = 360f;
+
+    [Header("Tree size by location (near roads vs park middle)")]
+    [Tooltip("0 = near road edge, 1 = deep in park.")]
+    public Vector2 heightScaleNearRoad = new Vector2(0.55f, 0.85f);
+    public Vector2 heightScaleDeepPark = new Vector2(0.95f, 1.60f);
+
+    [Tooltip("0 = near road edge, 1 = deep in park.")]
+    public Vector2 widthScaleNearRoad = new Vector2(0.65f, 0.95f);
+    public Vector2 widthScaleDeepPark = new Vector2(0.85f, 1.35f);
+
+    [Tooltip("If true, uses the same width for X and Z.")]
+    public bool keepWidthUniform = true;
+
+    [Header("How strong is the size shift?")]
+    [Range(0f, 2f)] public float sizeBiasStrength = 1.0f;
 
     [Header("Tree placement bias")]
     [Range(0f, 1f)] public float roadEdgeBias = 0.55f;
     [Range(0f, 1f)] public float parkCenterBias = 0.45f;
     public int distSearchRadius = 8;
 
-    [Header("Spawn rotation (fix for Quad tiles)")]
-    public bool rotateTilesFlat = true;     // set true if your tile prefabs are Unity Quad
-    public float tileXRotation = 90f;       // Quad lies vertical by default, rotate to lie on ground
+    [Header("Layers")]
+    public string obstacleLayerName = "IgnoreNavMesh";
 
-    int walkableLayer;
+    [Header("Clear")]
+    public bool clearBeforeSpawn = true;
+
+    [Header("Deterministic seed offset")]
+    public int seedOffset = 2000;
+
     int obstacleLayer;
+
+    System.Random rng;
 
     void OnEnable()
     {
@@ -53,17 +56,20 @@ public class ParkAndTreeGenerator : MonoBehaviour
             roads.OnGenerated -= Generate;
     }
 
-    [ContextMenu("Generate Parks And Trees")]
+    [ContextMenu("Generate Park Trees")]
     public void Generate()
     {
         if (roads == null || roads.Map == null) return;
+        if (treePrefab == null) return;
 
-        if (zoneRoot == null) zoneRoot = transform;
+        if (treeRoot == null) treeRoot = transform;
 
-        if (clearBeforeSpawn) ClearChildren(zoneRoot);
+        if (clearBeforeSpawn) ClearChildren(treeRoot);
 
-        walkableLayer = LayerMask.NameToLayer(walkableLayerName);
         obstacleLayer = LayerMask.NameToLayer(obstacleLayerName);
+
+        int baseSeed = Mathf.Max(1, roads.seed);
+        rng = new System.Random(unchecked(baseSeed + seedOffset));
 
         int w = roads.Width;
         int h = roads.Height;
@@ -72,101 +78,65 @@ public class ParkAndTreeGenerator : MonoBehaviour
         {
             for (int y = 0; y < h; y++)
             {
-                var c = roads.Map[x, y];
+                if (roads.Map[x, y] != RoadPathGenerator.CellType.Park)
+                    continue;
 
-                // Roads and paths are spawned by RoadPathGenerator.
-                if (c == RoadPathGenerator.CellType.Road) continue;
-                if (c == RoadPathGenerator.CellType.Path) continue;
-
-                var tileType = ChooseTileTypeForCell(x, y);
-
-                if (tileType == TileType.Park)
-                    SpawnTile(parkTilePrefab, x, y);
-                else if (tileType == TileType.BigLot)
-                    SpawnTile(bigLotTilePrefab, x, y);
-                else if (tileType == TileType.BuildingLot)
-                    SpawnTile(buildingLotTilePrefab, x, y);
-
-                // Trees only inside original park cells
-                if (c == RoadPathGenerator.CellType.Park && treePrefab != null)
-                    TrySpawnTree(x, y);
+                TrySpawnTree(x, y);
             }
         }
-    }
-
-    enum TileType { None, Park, BigLot, BuildingLot }
-
-    TileType ChooseTileTypeForCell(int x, int y)
-    {
-        var c = roads.Map[x, y];
-
-        if (c == RoadPathGenerator.CellType.Park) return TileType.Park;
-        if (c == RoadPathGenerator.CellType.BigLot) return TileType.BigLot;
-
-        if (!coverAllNonRoadNonPath) return TileType.None;
-
-        if (expandZonesToRoads)
-        {
-            if (NearCellType(x, y, RoadPathGenerator.CellType.Park, expandRadius))
-                return TileType.Park;
-
-            if (NearCellType(x, y, RoadPathGenerator.CellType.BigLot, expandRadius))
-                return TileType.BigLot;
-        }
-
-        return TileType.BuildingLot;
-    }
-
-    bool NearCellType(int sx, int sy, RoadPathGenerator.CellType target, int radius)
-    {
-        for (int dx = -radius; dx <= radius; dx++)
-        {
-            for (int dy = -radius; dy <= radius; dy++)
-            {
-                if (Mathf.Abs(dx) + Mathf.Abs(dy) > radius) continue;
-
-                int x = sx + dx;
-                int y = sy + dy;
-
-                if (x < 0 || y < 0 || x >= roads.Width || y >= roads.Height) continue;
-
-                if (roads.Map[x, y] == target)
-                    return true;
-            }
-        }
-        return false;
-    }
-
-    void SpawnTile(GameObject prefab, int x, int y)
-    {
-        if (prefab == null) return;
-
-        Vector3 pos = roads.GridToWorld(x, y);
-
-        Quaternion rot = Quaternion.identity;
-        if (rotateTilesFlat)
-            rot = Quaternion.Euler(tileXRotation, 0f, 0f);
-
-        var go = Instantiate(prefab, pos, rot, zoneRoot);
-
-        if (walkableLayer >= 0)
-            SetLayerRecursively(go, walkableLayer);
     }
 
     void TrySpawnTree(int x, int y)
     {
-        float w = TreeWeight(x, y);
-        float chance = treeChance * w;
-
-        if (Random.value > chance) return;
+        float chance = treeChance * TreeWeight(x, y);
+        if (NextFloat() > chance) return;
 
         Vector3 pos = roads.GridToWorld(x, y);
-        var rot = Quaternion.Euler(0f, Random.Range(0f, treeYRotationRandom), 0f);
+        var rot = Quaternion.Euler(0f, RandFloat(0f, treeYRotationRandom), 0f);
 
-        var tree = Instantiate(treePrefab, pos, rot, zoneRoot);
+        var tree = Instantiate(treePrefab, pos, rot, treeRoot);
+
+        float size01 = ParkMiddle01(x, y);
+        ApplyRandomTreeScale(tree.transform, size01);
 
         if (obstacleLayer >= 0)
             SetLayerRecursively(tree, obstacleLayer);
+    }
+
+    float ParkMiddle01(int x, int y)
+    {
+        int distToRoad = FindDistToCellType(x, y, RoadPathGenerator.CellType.Road, distSearchRadius);
+        int distToParkEdge = FindDistToParkEdge(x, y, distSearchRadius);
+
+        float nearRoad01 = 1f - Mathf.Clamp01(distToRoad / (float)distSearchRadius);
+        float deepInPark01 = Mathf.Clamp01(distToParkEdge / (float)distSearchRadius);
+
+        float size01 = deepInPark01;
+
+        size01 *= (1f - nearRoad01);
+        size01 = Mathf.Clamp01(size01 * sizeBiasStrength);
+
+        return size01;
+    }
+
+    void ApplyRandomTreeScale(Transform t, float size01)
+    {
+        if (t == null) return;
+
+        float minH = Mathf.Lerp(heightScaleNearRoad.x, heightScaleDeepPark.x, size01);
+        float maxH = Mathf.Lerp(heightScaleNearRoad.y, heightScaleDeepPark.y, size01);
+        if (maxH < minH) { float tmp = minH; minH = maxH; maxH = tmp; }
+
+        float minW = Mathf.Lerp(widthScaleNearRoad.x, widthScaleDeepPark.x, size01);
+        float maxW = Mathf.Lerp(widthScaleNearRoad.y, widthScaleDeepPark.y, size01);
+        if (maxW < minW) { float tmp = minW; minW = maxW; maxW = tmp; }
+
+        float h = RandFloat(minH, maxH);
+
+        float wx = RandFloat(minW, maxW);
+        float wz = keepWidthUniform ? wx : RandFloat(minW, maxW);
+
+        t.localScale = new Vector3(wx, h, wz);
     }
 
     float TreeWeight(int x, int y)
@@ -261,11 +231,29 @@ public class ParkAndTreeGenerator : MonoBehaviour
             var child = parent.GetChild(i);
 
 #if UNITY_EDITOR
-            if (!Application.isPlaying) DestroyImmediate(child.gameObject);
+            if (!UnityEngine.Application.isPlaying) DestroyImmediate(child.gameObject);
             else Destroy(child.gameObject);
 #else
             Destroy(child.gameObject);
 #endif
         }
+    }
+
+    float NextFloat()
+    {
+        return (float)rng.NextDouble();
+    }
+
+    float RandFloat(float minInclusive, float maxInclusive)
+    {
+        if (maxInclusive < minInclusive)
+        {
+            float t = minInclusive;
+            minInclusive = maxInclusive;
+            maxInclusive = t;
+        }
+
+        float t01 = (float)rng.NextDouble();
+        return Mathf.Lerp(minInclusive, maxInclusive, t01);
     }
 }
