@@ -13,9 +13,9 @@ public class IsoCityCamera : MonoBehaviour
     public float yaw = 45f;       // Y rotation
 
     [Header("Ortho zoom")]
-    public float zoomSpeed = 6f;
-    public float minOrtho = 10f;
-    public float maxOrtho = 60f;
+    public float zoomSpeed = 20f;
+    public float minOrtho = 2f;
+    public float maxOrtho = 7f;
 
     [Header("Pan")]
     public float panSpeed = 25f;

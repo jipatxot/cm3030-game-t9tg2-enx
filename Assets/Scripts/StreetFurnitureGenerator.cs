@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Unity.AI.Navigation;
@@ -9,8 +10,8 @@ public class StreetFurnitureGenerator : MonoBehaviour
     public readonly List<Transform> SpawnedLamps = new List<Transform>();
 
     [Header("Debug")]
-    public bool debugSignals = true;
-    public bool pauseOnBadSignal = true;
+    public bool debugSignals = false;
+    public bool pauseOnBadSignal = false;
     public float debugDrawSeconds = 30f;
 
     [Header("Refs")]
@@ -31,7 +32,7 @@ public class StreetFurnitureGenerator : MonoBehaviour
     public bool clearBeforeSpawn = true;
 
     [Header("Street Lamps")]
-    [Range(0f, 1f)] public float lampChance = 0.08f;
+    [Range(0f, 1f)] public float lampChance = 0.75f;
     public int lampSpacingTiles = 18;
     public float lampSideOffset = 0.65f;
     public float lampYOffset = 0.02f;
@@ -56,15 +57,15 @@ public class StreetFurnitureGenerator : MonoBehaviour
     [Header("Lamp lit areas (NavMeshModifierVolume only)")]
     public bool createLampLitVolumes = true;
     public string litAreaName = "Lit";
-    public float lampLitRadius = 12f;
-    public float lampLitHeight = 4f;
+    public float lampLitRadius = 3f;
+    public float lampLitHeight = 1.5f;
     public float lampLitCenterY = 1.0f;
 
     [Header("Traffic light lit areas (NavMeshModifierVolume)")]
     public bool createTrafficLightLitVolumes = true;
     public string trafficLightLitAreaName = "Lit";
-    public float trafficLightLitRadius = 6f;
-    public float trafficLightLitHeight = 4f;
+    public float trafficLightLitRadius = 1f;
+    public float trafficLightLitHeight = 1.5f;
     public float trafficLightLitCenterY = 1.0f;
     public string trafficLightLitChildName = "LitVolume_TrafficLight";
 
@@ -76,11 +77,16 @@ public class StreetFurnitureGenerator : MonoBehaviour
     [Header("Safety")]
     public int maxJunctionClusterSize = 200;
 
+    [Header("Deterministic seed offset")]
+    public int seedOffset = 3000;
+
     int walkableLayer = -1;
     int obstacleLayer = -1;
 
     bool[,] hasSignal;
     HashSet<int> zebraKeys = new HashSet<int>();
+
+    System.Random rng;
 
     void Awake()
     {
@@ -109,6 +115,9 @@ public class StreetFurnitureGenerator : MonoBehaviour
 
         SpawnedLamps.Clear();
         zebraKeys.Clear();
+
+        int baseSeed = Mathf.Max(1, roads.seed);
+        rng = new System.Random(unchecked(baseSeed + seedOffset));
 
         int w = roads.Width;
         int h = roads.Height;
@@ -141,7 +150,7 @@ public class StreetFurnitureGenerator : MonoBehaviour
                 if (IsMultiLaneCorridorCell(x, y)) continue;
 
                 if (((x * 73856093) ^ (y * 19349663)) % step != 0) continue;
-                if (Random.value > lampChance) continue;
+                if (NextFloat() > lampChance) continue;
 
                 Vector3 basePos = roads.GridToWorld(x, y);
                 Vector3 side = ChooseRoadSideOffset(x, y, lampSideOffset);
@@ -258,7 +267,7 @@ public class StreetFurnitureGenerator : MonoBehaviour
                 bool shouldPlace =
                     isBoulevardIntersection
                         ? true
-                        : (Random.value <= smallRoadSignalChance && FarFromOtherSignals(anchor.x, anchor.y));
+                        : (NextFloat() <= smallRoadSignalChance && FarFromOtherSignals(anchor.x, anchor.y));
 
                 if (!shouldPlace) continue;
 
@@ -294,28 +303,6 @@ public class StreetFurnitureGenerator : MonoBehaviour
         TryPlaceSignalAtCorner(c, cx, cy, +1, -1);
         TryPlaceSignalAtCorner(c, cx, cy, -1, -1);
     }
-
-    //float GetPrefabFootprintRadiusXZ(GameObject prefab)
-    //{
-    //    if (prefab == null) return 0f;
-
-    //    var r = prefab.GetComponentInChildren<Renderer>();
-    //    if (r == null) return 0f;
-
-    //    // world-space bounds on the prefab asset are fine for an approximate footprint
-    //    float ex = r.bounds.extents.x;
-    //    float ez = r.bounds.extents.z;
-    //    return Mathf.Max(ex, ez);
-    //}
-
-    //bool IsInsideGroundBoundsWithMargin(Vector3 p, float margin)
-    //{
-    //    if (groundCollider == null) return true;
-
-    //    var b = groundCollider.bounds;
-    //    return p.x >= b.min.x + margin && p.x <= b.max.x - margin &&
-    //           p.z >= b.min.z + margin && p.z <= b.max.z - margin;
-    //}
 
     void TryPlaceSignalAtCorner(Vector3 center, int x, int y, int sx, int sy)
     {
@@ -357,7 +344,6 @@ public class StreetFurnitureGenerator : MonoBehaviour
 
         if (debugSignals)
         {
-            // Green = would spawn, Red = blocked
             UnityEngine.Debug.DrawLine(candidate + Vector3.up * 0.2f, candidate + Vector3.up * 3f, shouldSpawn ? Color.green : Color.red, debugDrawSeconds);
             UnityEngine.Debug.DrawLine(pos + Vector3.up * 0.2f, pos + Vector3.up * 3f, shouldSpawn ? Color.green : Color.red, debugDrawSeconds);
 
@@ -369,7 +355,6 @@ public class StreetFurnitureGenerator : MonoBehaviour
                 (groundCollider != null ? $"groundBoundsX[{gb.min.x:F2},{gb.max.x:F2}] Z[{gb.min.z:F2},{gb.max.z:F2}] insideBounds={insideBounds}" : "groundCollider=NULL")
             );
 
-            // If it looks like it’s outside, stop right here
             if (pauseOnBadSignal && snappedOk && groundCollider != null && !insideBounds)
             {
                 UnityEngine.Debug.Break();
@@ -384,8 +369,6 @@ public class StreetFurnitureGenerator : MonoBehaviour
 
         EnsureTrafficLightLitVolume(tl);
     }
-
-
 
     // -----------------------------
     // Zebras (clusters)
@@ -531,7 +514,7 @@ public class StreetFurnitureGenerator : MonoBehaviour
             {
                 if (!InBounds(x, ny)) continue;
                 if (!IsRoad(x, ny)) continue;
-                if (inCluster.Contains(Pack(x, y: ny, w))) continue;
+                if (inCluster.Contains(Pack(x, ny, w))) continue;
                 northApproaches.Add(new Vector2Int(x, ny));
             }
         }
@@ -554,11 +537,11 @@ public class StreetFurnitureGenerator : MonoBehaviour
 
         if (!forceBigRoad)
         {
-            if (Random.value > smallRoadZebraChancePerSide) return;
+            if (NextFloat() > smallRoadZebraChancePerSide) return;
         }
         else
         {
-            if (Random.value > zebraChancePerSide) return;
+            if (NextFloat() > zebraChancePerSide) return;
         }
 
         for (int i = approaches.Count - 1; i >= 0; i--)
@@ -779,7 +762,6 @@ public class StreetFurnitureGenerator : MonoBehaviour
             return true;
         }
 
-        // If you forgot to assign groundCollider, this can hit GroundPlane, buildings, anything in groundMask.
         if (Physics.Raycast(start, Vector3.down, out var hit2, maxDist, groundMask, QueryTriggerInteraction.Ignore))
         {
             snapped = new Vector3(pos.x, hit2.point.y + extraY, pos.z);
@@ -839,5 +821,10 @@ public class StreetFurnitureGenerator : MonoBehaviour
             Destroy(child.gameObject);
 #endif
         }
+    }
+
+    float NextFloat()
+    {
+        return rng == null ? 0f : (float)rng.NextDouble();
     }
 }
