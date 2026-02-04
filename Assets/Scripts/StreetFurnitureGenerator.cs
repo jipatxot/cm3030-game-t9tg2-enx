@@ -169,8 +169,25 @@ public class StreetFurnitureGenerator : MonoBehaviour
 
                 if (createLampLitVolumes)
                     EnsureLampLitVolume(lamp);
+
+                EnsureLampLightSource(lamp);
             }
         }
+    }
+
+    void EnsureLampLightSource(GameObject lamp)
+    {
+        if (lamp == null) return;
+
+        var source = lamp.GetComponent<LightSource>();
+        if (source == null) source = lamp.AddComponent<LightSource>();
+
+        source.sourceType = LightSource.LightSourceType.LampPost;
+        source.restoreRadius = Mathf.Max(0.5f, lampLitRadius);
+        source.safeRadius = Mathf.Max(0.5f, lampLitRadius);
+        source.healthRestoreAmount = 1;
+        source.minSecondsToBlackout = 12f;
+        source.maxSecondsToBlackout = 32f;
     }
 
     void EnsureTrafficLightLitVolume(GameObject trafficLight)

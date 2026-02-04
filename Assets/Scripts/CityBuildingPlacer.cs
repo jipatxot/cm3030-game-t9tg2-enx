@@ -227,6 +227,8 @@ public class CityBuildingPlacer : MonoBehaviour
     {
         if (go == null) return;
 
+        EnsureBuildingLightSource(go, width, depth);
+
         if (obstacleLayer >= 0)
             SetLayerRecursively(go.transform, obstacleLayer);
 
@@ -257,6 +259,23 @@ public class CityBuildingPlacer : MonoBehaviour
             obs.carvingMoveThreshold = carveMoveThreshold;
             obs.carvingTimeToStationary = carveTimeToStationary;
         }
+    }
+
+    void EnsureBuildingLightSource(GameObject go, float width, float depth)
+    {
+        if (go == null) return;
+
+        var source = go.GetComponent<LightSource>();
+        if (source == null) source = go.AddComponent<LightSource>();
+
+        source.sourceType = LightSource.LightSourceType.Building;
+        float halfDiagonal = Mathf.Sqrt(width * width + depth * depth) * 0.5f;
+        float radius = Mathf.Max(1.5f, halfDiagonal + 0.5f);
+        source.restoreRadius = radius;
+        source.safeRadius = radius;
+        source.healthRestoreAmount = 2;
+        source.minSecondsToBlackout = 28f;
+        source.maxSecondsToBlackout = 80f;
     }
 
     void SetLayerRecursively(Transform t, int layer)
