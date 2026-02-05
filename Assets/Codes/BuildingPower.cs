@@ -37,13 +37,22 @@ public class BuildingPower : MonoBehaviour
     public bool IsLit { get; private set; }
 
     /// <summary>(this, currentPower, normalized01)</summary>
-    public event Action<BuildingPower, float, float> OnPowerChanged;
+    // public event Action<BuildingPower, float, float> OnPowerChanged;
 
     /// <summary>Triggered when power hits 0 and building becomes dark.</summary>
-    public event Action<BuildingPower> OnBecameDark;
+    // public event Action<BuildingPower> OnBecameDark;
 
     /// <summary>Triggered when building becomes lit again (power > 0).</summary>
-    public event Action<BuildingPower> OnBecameLit;
+    // public event Action<BuildingPower> OnBecameLit;
+    
+    // Replace System.Action<> with delegates (works even on very old Unity/.NET profiles)
+    public delegate void PowerChangedEvent(BuildingPower building, float currentPower, float normalized01);
+    public delegate void BuildingEvent(BuildingPower building);
+
+    public event PowerChangedEvent OnPowerChanged;
+    public event BuildingEvent OnBecameDark;
+    public event BuildingEvent OnBecameLit;
+
 
     private float _delayTimer;
     private float _graceTimer;
