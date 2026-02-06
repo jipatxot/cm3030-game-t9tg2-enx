@@ -657,8 +657,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af86a0efdb6862e43992a9cba762aabe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StreetLampPower
-  maxPower: 100
-  baseDecayPerSecond: 2
+  maxPower: 200
+  baseDecayPerSecond: 5
   startFullyPowered: 1
   decayStartDelaySeconds: 0
   graceAfterRepairSeconds: 0.5
