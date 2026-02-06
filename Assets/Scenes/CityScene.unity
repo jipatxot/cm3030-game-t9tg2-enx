@@ -2477,6 +2477,7 @@ GameObject:
   - component: {fileID: 1714554824}
   - component: {fileID: 1714554826}
   - component: {fileID: 1714554827}
+  - component: {fileID: 1714554828}
   m_Layer: 0
   m_Name: CityGenerator
   m_TagString: Untagged
@@ -2727,7 +2728,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e88e30f24d1b49caaf9eff50af0acdd2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerDecayManager
-  sessionLengthSeconds: 30
+  sessionLengthSeconds: 60
   isRunning: 1
   decayMultiplierOverTime:
     serializedVersion: 2
@@ -2735,8 +2736,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -2768,6 +2769,25 @@ MonoBehaviour:
   repairKey: 15
   repairAllLamps: 1
   onlyDarkLamps: 0
+--- !u!114 &1714554828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714554818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70e84d119296457fac4058b06babf972, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BlackoutCountdownPreciseUI
+  countdownText: {fileID: 0}
+  prefix: 'Darkness is coming: '
+  integralSamples: 4096
+  recomputeOnLampCountChange: 1
+  lampCountCheckInterval: 0.5
+  offThresholdPower: 0.001
+  showInfinityWhenNeverBlackout: 1
 --- !u!1 &1876845673
 GameObject:
   m_ObjectHideFlags: 0
