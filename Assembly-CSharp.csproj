@@ -63,10 +63,12 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\IsoCityCamera.cs" />
     <Compile Include="Assets\Scripts\CityNavMeshBaker.cs" />
+    <Compile Include="Assets\Codes\PowerRepairInteraction.cs" />
     <Compile Include="Assets\Scripts\GameUIController.cs" />
     <Compile Include="Assets\Scripts\MonsterWalkSpeedSync.cs" />
     <Compile Include="Assets\Scripts\MonsterSpawner.cs" />
     <Compile Include="Assets\Scripts\ProceduralBuildingVisual.cs" />
+    <Compile Include="Assets\Codes\StreetLampPower.cs" />
     <Compile Include="Assets\Scripts\RoadPathGenerator.cs" />
     <Compile Include="Assets\Scripts\StreetFurnitureGenerator.cs" />
     <Compile Include="Assets\Codes\PowerDecayManager.cs" />
@@ -75,7 +77,6 @@
     <Compile Include="Assets\PlayerControls.cs" />
     <Compile Include="Assets\Scripts\MonsterWander.cs" />
     <Compile Include="Assets\Scripts\CityBuildingPlacer.cs" />
-    <Compile Include="Assets\Codes\BuildingPower.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

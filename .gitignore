@@ -7,3 +7,5 @@
 UserSettings/
 *.sln
 .vsconfig
+
+.idea
