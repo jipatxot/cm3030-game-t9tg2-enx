@@ -72,7 +72,7 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
     {
         var mgr = PowerDecayManager.Instance;
 
-        // 没有 Manager：显示 00:00（如果能显示的话）
+        // No Manager: Displays 00:00 (if it can be displayed).
         if (mgr == null)
         {
             if (EnsureText())
@@ -80,11 +80,11 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
             return;
         }
 
-        // 确保 UI 一定存在，否则直接 return（避免 NRE）
+        // Ensure the UI exists; otherwise, return immediately (to avoid NRE).
         if (!EnsureText())
             return;
 
-        // 可选：检测灯数量变化（城市重建时）
+        // Optional: Changes in the number of detection lights (during urban reconstruction)
         if (recomputeOnLampCountChange)
         {
             _lampCountTimer += Time.deltaTime;
@@ -100,7 +100,7 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
             }
         }
 
-        // 永不全灭：显示 ∞
+        // Never completely off: Display ∞
         if (_neverBlackout && showInfinityWhenNeverBlackout)
         {
             countdownText.text = prefix + "∞";
@@ -122,7 +122,7 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
 
         CreateDefaultUI();
 
-        // CreateDefaultUI 后再检查一次
+        // Check again after CreateDefaultUI
         return countdownText != null;
     }
 
