@@ -2728,25 +2728,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e88e30f24d1b49caaf9eff50af0acdd2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerDecayManager
-  sessionLengthSeconds: 60
+  sessionLengthSeconds: 5
   isRunning: 1
   decayMultiplierOverTime:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
+      time: 0.0000014142133
+      value: 1.000946
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
+      time: 1.0046198
+      value: 1.9908333
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
