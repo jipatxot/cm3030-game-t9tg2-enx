@@ -9,3 +9,6 @@ UserSettings/
 .vsconfig
 
 .idea
+backup
+*.zip
+*.csproj

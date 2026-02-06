@@ -17,6 +17,13 @@ public class PowerRepairInteraction : MonoBehaviour
     [Tooltip("If true, only repairs lamps that are currently dark/empty power.")]
     public bool onlyDarkLamps = false;
 
+    
+    
+    public delegate void RepairedEvent();
+    public static event RepairedEvent OnRepaired;
+
+    
+    
     private void Update()
     {
         var kb = Keyboard.current;
@@ -27,7 +34,11 @@ public class PowerRepairInteraction : MonoBehaviour
         int repaired = repairAllLamps ? RepairAll() : RepairOneAny();
 
         if (repaired > 0)
+        {
             Debug.Log($"[PowerRepairInteraction] Repaired {repaired} lamp(s).");
+            OnRepaired?.Invoke();
+        }
+
         else
             Debug.Log("[PowerRepairInteraction] No lamp repaired (none found / all already lit).");
     }
