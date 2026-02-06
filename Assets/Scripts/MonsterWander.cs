@@ -35,6 +35,12 @@ public class MonsterWander : MonoBehaviour
         if (agent == null || !agent.enabled) return;
         if (!agent.isOnNavMesh) return; // <- key line
 
+        if (LightSource.IsPositionInAnySafeZone(transform.position))
+        {
+            PickNewDestination();
+            return;
+        }
+
         if (Time.time < nextTime) return;
 
         if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
@@ -54,6 +60,7 @@ public class MonsterWander : MonoBehaviour
 
             if (NavMesh.SamplePosition(guess, out NavMeshHit hit, sampleRadius, darkAreaMask))
             {
+                if (LightSource.IsPositionInAnySafeZone(hit.position)) continue;
                 agent.SetDestination(hit.position);
                 nextTime = Time.time + Random.Range(minWait, maxWait);
                 return;
