@@ -11,3 +11,4 @@ UserSettings/
 .idea
 backup
 *.zip
+*.csproj
