@@ -24,7 +24,7 @@ public class MonsterDamage : MonoBehaviour
 
         if (Time.time < nextHitTime) return;
 
-        if (LightSource.IsPositionInAnySafeZone(other.transform.position)) return;
+        if (SafeZoneRegistry.IsPositionSafe(other.transform.position)) return;
 
         var health = other.GetComponent<PlayerHealth>();
         if (health == null) return;
