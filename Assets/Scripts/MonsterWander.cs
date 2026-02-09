@@ -10,6 +10,12 @@ public class MonsterWander : MonoBehaviour
     public float minWanderRadius = 6f;
     public float maxWanderRadius = 18f;
 
+    [Header("Chase Player")]
+    public float chaseRange = 6f;
+    public float loseRange = 9f;
+    public float chaseRepathSeconds = 0.25f;
+    public bool stopChasingInSafeZone = true;
+
     [Header("Avoid Lit area")]
     public string litAreaName = "Lit";
     public float sampleRadius = 2f;
@@ -18,6 +24,9 @@ public class MonsterWander : MonoBehaviour
     NavMeshAgent agent;
     int darkAreaMask;
     float nextTime;
+    float nextChaseTime;
+    bool isChasing;
+    Transform playerTransform;
 
     void Awake()
     {
@@ -35,10 +44,22 @@ public class MonsterWander : MonoBehaviour
         if (agent == null || !agent.enabled) return;
         if (!agent.isOnNavMesh) return; // <- key line
 
-        if (LightSource.IsPositionInAnySafeZone(transform.position))
+        if (SafeZoneRegistry.IsPositionSafe(transform.position))
         {
             PickNewDestination();
             return;
+        }
+
+        if (TryGetPlayer(out Vector3 playerPos) && ShouldChasePlayer(playerPos))
+        {
+            ChasePlayer(playerPos);
+            return;
+        }
+
+        if (isChasing)
+        {
+            isChasing = false;
+            nextTime = Time.time + Random.Range(minWait, maxWait);
         }
 
         if (Time.time < nextTime) return;
@@ -60,7 +81,7 @@ public class MonsterWander : MonoBehaviour
 
             if (NavMesh.SamplePosition(guess, out NavMeshHit hit, sampleRadius, darkAreaMask))
             {
-                if (LightSource.IsPositionInAnySafeZone(hit.position)) continue;
+                if (SafeZoneRegistry.IsPositionSafe(hit.position)) continue;
                 agent.SetDestination(hit.position);
                 nextTime = Time.time + Random.Range(minWait, maxWait);
                 return;
@@ -68,5 +89,45 @@ public class MonsterWander : MonoBehaviour
         }
 
         nextTime = Time.time + Random.Range(minWait, maxWait);
+    }
+
+    bool TryGetPlayer(out Vector3 position)
+    {
+        if (playerTransform == null)
+        {
+            var player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null) playerTransform = player.transform;
+        }
+
+        if (playerTransform != null)
+        {
+            position = playerTransform.position;
+            return true;
+        }
+
+        position = Vector3.zero;
+        return false;
+    }
+
+    bool ShouldChasePlayer(Vector3 playerPos)
+    {
+        if (stopChasingInSafeZone && SafeZoneRegistry.IsPositionSafe(playerPos)) return false;
+
+        float dist = Vector3.Distance(transform.position, playerPos);
+
+        if (isChasing)
+            return dist <= loseRange;
+
+        return dist <= chaseRange;
+    }
+
+    void ChasePlayer(Vector3 playerPos)
+    {
+        if (!isChasing) isChasing = true;
+
+        if (Time.time < nextChaseTime) return;
+
+        agent.SetDestination(playerPos);
+        nextChaseTime = Time.time + Mathf.Max(0.05f, chaseRepathSeconds);
     }
 }
