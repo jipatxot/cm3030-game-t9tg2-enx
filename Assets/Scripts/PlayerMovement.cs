@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
@@ -9,6 +10,10 @@ public class PlayerMovement : MonoBehaviour
     public float rotationSpeed = 540f;
     public float clickStopDistance = 0.25f;
     public LayerMask clickMask = ~0;
+
+    [Header("Click-to-move")]
+    public float maxClickRayDistance = 1000f;
+    public float navMeshSampleRadius = 3f;
 
     CharacterController controller;
     Camera mainCamera;
@@ -50,8 +55,11 @@ public class PlayerMovement : MonoBehaviour
     {
         var mouse = Mouse.current;
         if (mouse == null) return;
-
         if (!mouse.rightButton.wasPressedThisFrame) return;
+
+        // Don't steal right-clicks from menus.
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            return;
 
         if (mainCamera == null)
             mainCamera = Camera.main;
@@ -59,19 +67,42 @@ public class PlayerMovement : MonoBehaviour
 
         Ray ray = mainCamera.ScreenPointToRay(mouse.position.ReadValue());
 
-        if (Physics.Raycast(ray, out RaycastHit hit, 1000f, clickMask, QueryTriggerInteraction.Ignore))
+        if (TryGetClickedWorldPoint(ray, out Vector3 worldPoint) && TryGetNavMeshPoint(worldPoint, out Vector3 navPoint))
         {
-            clickTarget = hit.point;
+            clickTarget = navPoint;
             hasClickTarget = true;
-            return;
+        }
+    }
+
+    bool TryGetClickedWorldPoint(Ray ray, out Vector3 point)
+    {
+        if (Physics.Raycast(ray, out RaycastHit hit, maxClickRayDistance, clickMask, QueryTriggerInteraction.Ignore))
+        {
+            point = hit.point;
+            return true;
         }
 
-        int navMask = NavMesh.AllAreas;
-        if (NavMesh.SamplePosition(ray.origin + ray.direction * 40f, out NavMeshHit navHit, 20f, navMask))
+        Plane movePlane = new Plane(Vector3.up, new Vector3(0f, transform.position.y, 0f));
+        if (movePlane.Raycast(ray, out float enter))
         {
-            clickTarget = navHit.position;
-            hasClickTarget = true;
+            point = ray.GetPoint(enter);
+            return true;
         }
+
+        point = Vector3.zero;
+        return false;
+    }
+
+    bool TryGetNavMeshPoint(Vector3 desiredPoint, out Vector3 navPoint)
+    {
+        if (NavMesh.SamplePosition(desiredPoint, out NavMeshHit navHit, navMeshSampleRadius, NavMesh.AllAreas))
+        {
+            navPoint = navHit.position;
+            return true;
+        }
+
+        navPoint = Vector3.zero;
+        return false;
     }
 
     Vector3 GetClickMoveVector()
