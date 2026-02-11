@@ -24,6 +24,12 @@ public class MonsterSpawner : MonoBehaviour
     public float sampleRadius = 2.0f;
     public float spawnY = 0.1f;
 
+    [Header("Combat")]
+    public bool ensureMonsterCombatComponents = true;
+    public int damagePerTick = 1;
+    public float damageInterval = 0.75f;
+    public float attackRange = 1.1f;
+
     [Header("Avoid Lit area")]
     public string litAreaName = "Lit";
 
@@ -121,6 +127,9 @@ public class MonsterSpawner : MonoBehaviour
             {
                 var go = Instantiate(monsterPrefab, p + Vector3.up * spawnY, Quaternion.identity, monstersRoot);
 
+                if (ensureMonsterCombatComponents)
+                    EnsureMonsterCombat(go);
+
                 // Scale the whole monster root
                 float s = Mathf.Max(0.0001f, monsterScale);
                 go.transform.localScale = Vector3.one * s;
@@ -145,6 +154,25 @@ public class MonsterSpawner : MonoBehaviour
                 }
             }
         }
+    }
+
+    void EnsureMonsterCombat(GameObject monster)
+    {
+        if (monster == null) return;
+
+        var wander = monster.GetComponent<MonsterWander>();
+        if (wander == null)
+            wander = monster.AddComponent<MonsterWander>();
+
+        wander.playerSeparationDistance = Mathf.Min(wander.playerSeparationDistance, 0.12f);
+
+        var damage = monster.GetComponent<MonsterDamage>();
+        if (damage == null)
+            damage = monster.AddComponent<MonsterDamage>();
+
+        damage.damagePerTick = Mathf.Max(1, damagePerTick);
+        damage.damageInterval = Mathf.Max(0.1f, damageInterval);
+        damage.attackRange = Mathf.Max(0.25f, attackRange);
     }
 
     bool TryFindDarkPoint(Bounds b, out Vector3 point)
