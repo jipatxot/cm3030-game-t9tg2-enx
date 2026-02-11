@@ -13,9 +13,12 @@ public class MonsterWander : MonoBehaviour
     [Header("Chase Player")]
     public float chaseRange = 6f;
     public float loseRange = 9f;
+    public float minimumEffectiveChaseRange = 10f;
+    public float minimumEffectiveLoseRange = 14f;
     public float chaseRepathSeconds = 0.25f;
     public bool stopChasingInSafeZone = true;
     public float playerSeparationDistance = 1.2f;
+    public float chaseStopDistanceReduction = 3f;
 
     [Header("Avoid Lit area")]
     public string litAreaName = "Lit";
@@ -45,7 +48,7 @@ public class MonsterWander : MonoBehaviour
     void Update()
     {
         if (agent == null || !agent.enabled) return;
-        if (!agent.isOnNavMesh) return; // <- key line
+        if (!agent.isOnNavMesh) return;
 
         if (SafeZoneRegistry.IsPositionSafe(transform.position))
         {
@@ -68,9 +71,7 @@ public class MonsterWander : MonoBehaviour
         if (Time.time < nextTime) return;
 
         if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-        {
             PickNewDestination();
-        }
     }
 
     void PickNewDestination()
@@ -117,11 +118,13 @@ public class MonsterWander : MonoBehaviour
         if (stopChasingInSafeZone && SafeZoneRegistry.IsPositionSafe(playerPos)) return false;
 
         float dist = Vector3.Distance(transform.position, playerPos);
+        float effectiveChaseRange = Mathf.Max(chaseRange, minimumEffectiveChaseRange);
+        float effectiveLoseRange = Mathf.Max(loseRange, minimumEffectiveLoseRange, effectiveChaseRange);
 
         if (isChasing)
-            return dist <= loseRange;
+            return dist <= effectiveLoseRange;
 
-        return dist <= chaseRange;
+        return dist <= effectiveChaseRange;
     }
 
     void ChasePlayer(Vector3 playerPos)
@@ -130,10 +133,11 @@ public class MonsterWander : MonoBehaviour
 
         if (Time.time < nextChaseTime) return;
 
-        float stopDistance = Mathf.Max(agent.stoppingDistance, playerSeparationDistance);
+        float baselineStopDistance = Mathf.Max(agent.stoppingDistance, playerSeparationDistance);
         if (monsterDamage != null)
-            stopDistance = Mathf.Max(stopDistance, monsterDamage.attackRange * 0.9f);
+            baselineStopDistance = Mathf.Max(baselineStopDistance, monsterDamage.attackRange * 0.9f);
 
+        float stopDistance = Mathf.Max(0.35f, baselineStopDistance - chaseStopDistanceReduction);
         agent.stoppingDistance = stopDistance;
 
         Vector3 toPlayer = playerPos - transform.position;
@@ -146,8 +150,23 @@ public class MonsterWander : MonoBehaviour
             return;
         }
 
-        Vector3 destination = playerPos - toPlayer.normalized * stopDistance;
-        agent.SetDestination(destination);
+        Vector3 desiredDestination = playerPos - toPlayer.normalized * stopDistance;
+        if (!TrySetChaseDestination(desiredDestination, playerPos))
+            agent.ResetPath();
+
         nextChaseTime = Time.time + Mathf.Max(0.05f, chaseRepathSeconds);
+    }
+
+    bool TrySetChaseDestination(Vector3 desiredDestination, Vector3 playerPos)
+    {
+        if (NavMesh.SamplePosition(desiredDestination, out NavMeshHit preferredHit, sampleRadius * 2f, darkAreaMask))
+            return agent.SetDestination(preferredHit.position);
+
+        if (NavMesh.SamplePosition(playerPos, out NavMeshHit playerHit, sampleRadius * 4f, darkAreaMask))
+            return agent.SetDestination(playerHit.position);
+
+        if (agent.hasPath) return true;
+
+        return false;
     }
 }

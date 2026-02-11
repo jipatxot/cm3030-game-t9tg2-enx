@@ -15,6 +15,9 @@ public class HealthUIController : MonoBehaviour
     [Header("Auto HUD")]
     public bool autoCreateHudIfMissing = true;
 
+    [Header("World Health Bar")]
+    public bool autoAttachWorldHealthBar = true;
+
     [Header("Colors")]
     public Color damageColor = new Color(0.9f, 0.2f, 0.2f, 1f);
     public Color healColor = new Color(0.2f, 0.9f, 0.2f, 1f);
@@ -64,6 +67,9 @@ public class HealthUIController : MonoBehaviour
         playerHealth.OnHealthDelta += HandleHealthDelta;
 
         HandleHealthChanged(playerHealth.currentHealth, playerHealth.maxHealth);
+
+        if (autoAttachWorldHealthBar)
+            EnsureWorldHealthBarAttached();
     }
 
     void UnbindPlayer()
@@ -88,6 +94,18 @@ public class HealthUIController : MonoBehaviour
             floatingTextSpawner.SpawnText($"{delta}", damageColor);
         else if (delta > 0)
             floatingTextSpawner.SpawnText($"+{delta}", healColor);
+    }
+
+    void EnsureWorldHealthBarAttached()
+    {
+        if (playerHealth == null) return;
+
+        var worldBar = playerHealth.GetComponent<PlayerWorldHealthBar>();
+        if (worldBar == null)
+        {
+            worldBar = playerHealth.gameObject.AddComponent<PlayerWorldHealthBar>();
+            worldBar.playerHealth = playerHealth;
+        }
     }
 
     void EnsureHudReferences()
