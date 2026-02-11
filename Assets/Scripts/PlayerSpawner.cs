@@ -72,6 +72,9 @@ public class PlayerSpawner : MonoBehaviour
             : BuildSimplePlayer(center);
 
         player.tag = "Player";
+
+        EnsurePlayerHealthUi(player);
+        EnsurePlayerWorldHealthBar(player);
     }
 
     Vector3 GetCityCenter()
@@ -91,6 +94,39 @@ public class PlayerSpawner : MonoBehaviour
         return basePos;
     }
 
+
+    void EnsurePlayerHealthUi(GameObject player)
+    {
+        if (player == null) return;
+
+        var ui = FindFirstObjectByType<HealthUIController>();
+        if (ui == null)
+        {
+            var uiGo = new GameObject("Health UI Controller");
+            ui = uiGo.AddComponent<HealthUIController>();
+        }
+
+        var health = player.GetComponent<PlayerHealth>();
+        if (health == null) return;
+
+        ui.playerHealth = health;
+        ui.autoCreateHudIfMissing = true;
+        ui.autoAttachWorldHealthBar = true;
+    }
+
+    void EnsurePlayerWorldHealthBar(GameObject player)
+    {
+        if (player == null) return;
+
+        var health = player.GetComponent<PlayerHealth>();
+        if (health == null) return;
+
+        var worldBar = player.GetComponent<PlayerWorldHealthBar>();
+        if (worldBar == null)
+            worldBar = player.AddComponent<PlayerWorldHealthBar>();
+
+        worldBar.playerHealth = health;
+    }
     GameObject BuildSimplePlayer(Vector3 position)
     {
         if (playerRoot == null) playerRoot = transform;

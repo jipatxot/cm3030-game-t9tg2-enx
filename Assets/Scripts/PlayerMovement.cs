@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
@@ -53,25 +52,37 @@ public class PlayerMovement : MonoBehaviour
 
     void HandleRightClickMoveTarget()
     {
-        var mouse = Mouse.current;
-        if (mouse == null) return;
-        if (!mouse.rightButton.wasPressedThisFrame) return;
-
-        // Don't steal right-clicks from menus.
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+        if (!WasRightClickPressedThisFrame())
             return;
 
         if (mainCamera == null)
             mainCamera = Camera.main;
         if (mainCamera == null) return;
 
-        Ray ray = mainCamera.ScreenPointToRay(mouse.position.ReadValue());
+        Ray ray = mainCamera.ScreenPointToRay(GetPointerScreenPosition());
 
         if (TryGetClickedWorldPoint(ray, out Vector3 worldPoint) && TryGetNavMeshPoint(worldPoint, out Vector3 navPoint))
         {
             clickTarget = navPoint;
             hasClickTarget = true;
         }
+    }
+
+    bool WasRightClickPressedThisFrame()
+    {
+        if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame)
+            return true;
+
+        // Fallback for legacy input configuration.
+        return Input.GetMouseButtonDown(1);
+    }
+
+    Vector2 GetPointerScreenPosition()
+    {
+        if (Mouse.current != null)
+            return Mouse.current.position.ReadValue();
+
+        return Input.mousePosition;
     }
 
     bool TryGetClickedWorldPoint(Ray ray, out Vector3 point)

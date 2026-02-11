@@ -11,7 +11,8 @@ public class PlayerWorldHealthBar : MonoBehaviour
     public bool faceMainCamera = true;
 
     [Header("Size")]
-    public Vector2 barSize = new Vector2(1.6f, 0.2f);
+    public Vector2 barSize = new Vector2(140f, 18f);
+    public float worldScale = 0.01f;
 
     [Header("Colors")]
     public Color backgroundColor = new Color(0f, 0f, 0f, 0.65f);
@@ -100,6 +101,7 @@ public class PlayerWorldHealthBar : MonoBehaviour
 
         var rect = root.GetComponent<RectTransform>();
         rect.sizeDelta = barSize;
+        rect.localScale = Vector3.one * Mathf.Max(0.0001f, worldScale);
 
         var bgGo = new GameObject("Background");
         bgGo.transform.SetParent(root.transform, false);
