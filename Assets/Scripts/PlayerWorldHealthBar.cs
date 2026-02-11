@@ -26,8 +26,8 @@ public class PlayerWorldHealthBar : MonoBehaviour
     public float floatingDamageDuration = 0.75f;
     public float floatingDamageHeight = 0.45f;
     public float floatingDamageScale = 0.12f;
-    public Color floatingDamageColor = new Color(1f, 0.25f, 0.25f, 1f);
-    public Color floatingHealColor = new Color(0.25f, 1f, 0.35f, 1f);
+    public Color floatingDamageColor = Color.red;
+    public Color floatingHealColor = Color.green;
 
     [Header("Colors")]
     public Color backgroundColor = new Color(0f, 0f, 0f, 0.65f);

@@ -7,26 +7,55 @@ public class MonsterDamage : MonoBehaviour
     public float attackRange = 1.4f;
 
     float nextDamageTime;
+    bool isPlayerInRange;
     Transform playerTransform;
     PlayerHealth playerHealth;
 
     void Update()
     {
-        if (!TryBindPlayer()) return;
-        if (playerTransform == null || playerHealth == null) return;
+        if (!TryBindPlayer())
+        {
+            isPlayerInRange = false;
+            return;
+        }
 
-        if (SafeZoneRegistry.IsPositionSafe(playerTransform.position)) return;
+        if (playerTransform == null || playerHealth == null)
+        {
+            isPlayerInRange = false;
+            return;
+        }
+
+        if (SafeZoneRegistry.IsPositionSafe(playerTransform.position))
+        {
+            isPlayerInRange = false;
+            return;
+        }
 
         Vector3 toPlayer = playerTransform.position - transform.position;
         toPlayer.y = 0f;
         float sqrDistance = toPlayer.sqrMagnitude;
         float sqrRange = attackRange * attackRange;
 
-        if (sqrDistance > sqrRange) return;
+        bool enteredRange = sqrDistance <= sqrRange;
+        if (!enteredRange)
+        {
+            isPlayerInRange = false;
+            return;
+        }
+
+        float interval = Mathf.Max(0.05f, damageInterval);
+
+        if (!isPlayerInRange)
+        {
+            isPlayerInRange = true;
+            nextDamageTime = Time.time + interval;
+            return;
+        }
+
         if (Time.time < nextDamageTime) return;
 
         playerHealth.ApplyDamage(damagePerTick);
-        nextDamageTime = Time.time + Mathf.Max(0.05f, damageInterval);
+        nextDamageTime = Time.time + interval;
     }
 
     bool TryBindPlayer()

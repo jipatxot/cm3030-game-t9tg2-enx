@@ -20,8 +20,8 @@ public class HealthUIController : MonoBehaviour
     public bool autoAttachWorldHealthBar = true;
 
     [Header("Colors")]
-    public Color damageColor = new Color(0.9f, 0.2f, 0.2f, 1f);
-    public Color healColor = new Color(0.2f, 0.9f, 0.2f, 1f);
+    public Color damageColor = Color.red;
+    public Color healColor = Color.green;
     public Color topLeftBarBackgroundColor = new Color(0f, 0f, 0f, 0.65f);
     public Color topLeftBarFillColor = new Color(0.2f, 0.95f, 0.2f, 0.95f);
 
