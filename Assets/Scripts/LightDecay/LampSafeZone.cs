@@ -15,7 +15,6 @@ public class LampSafeZone : MonoBehaviour, ISafeZone
     StreetLampPower lampPower;
     Transform playerTransform;
     float nextHealTime;
-    bool wasPlayerInRestoreRange;
 
     void Awake()
     {
@@ -47,21 +46,13 @@ public class LampSafeZone : MonoBehaviour, ISafeZone
         if (playerTransform == null) return;
 
         bool inRestoreRange = Vector3.Distance(playerTransform.position, transform.position) <= restoreRadius;
-
-        if (!inRestoreRange)
-        {
-            wasPlayerInRestoreRange = false;
-            return;
-        }
-
-        if (wasPlayerInRestoreRange) return;
+        if (!inRestoreRange) return;
 
         var health = playerTransform.GetComponent<PlayerHealth>();
         if (health == null) return;
 
         health.RestoreHealth(healthRestoreAmount);
         nextHealTime = Time.time + healCooldownSeconds;
-        wasPlayerInRestoreRange = true;
     }
 
     public bool IsPositionSafe(Vector3 position)

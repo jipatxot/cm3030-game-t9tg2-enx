@@ -18,6 +18,7 @@ public class MonsterWander : MonoBehaviour
     public float chaseRepathSeconds = 0.25f;
     public bool stopChasingInSafeZone = true;
     public float playerSeparationDistance = 0.05f;
+    public float maxAllowedSeparationDistance = 0.2f;
 
     [Header("Avoid Lit area")]
     public string litAreaName = "Lit";
@@ -130,7 +131,7 @@ public class MonsterWander : MonoBehaviour
 
         if (Time.time < nextChaseTime) return;
 
-        float stopDistance = Mathf.Max(0.01f, playerSeparationDistance);
+        float stopDistance = Mathf.Clamp(playerSeparationDistance, 0.01f, Mathf.Max(0.01f, maxAllowedSeparationDistance));
 
         agent.stoppingDistance = stopDistance;
 
