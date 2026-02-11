@@ -7,6 +7,7 @@ public class HealthUIController : MonoBehaviour
     [Header("Refs")]
     public PlayerHealth playerHealth;
     public TextMeshProUGUI healthText;
+    public Image healthBarFill;
     public FloatingTextSpawner floatingTextSpawner;
 
     [Header("Binding")]
@@ -21,6 +22,8 @@ public class HealthUIController : MonoBehaviour
     [Header("Colors")]
     public Color damageColor = new Color(0.9f, 0.2f, 0.2f, 1f);
     public Color healColor = new Color(0.2f, 0.9f, 0.2f, 1f);
+    public Color topLeftBarBackgroundColor = new Color(0f, 0f, 0f, 0.65f);
+    public Color topLeftBarFillColor = new Color(0.2f, 0.95f, 0.2f, 0.95f);
 
     float nextRebindTime;
 
@@ -84,6 +87,9 @@ public class HealthUIController : MonoBehaviour
     {
         if (healthText != null)
             healthText.text = $"HP: {current}/{max}";
+
+        if (healthBarFill != null)
+            healthBarFill.fillAmount = max <= 0 ? 0f : Mathf.Clamp01((float)current / max);
     }
 
     void HandleHealthDelta(int delta)
@@ -110,7 +116,7 @@ public class HealthUIController : MonoBehaviour
 
     void EnsureHudReferences()
     {
-        if (healthText != null && floatingTextSpawner != null) return;
+        if (healthText != null && healthBarFill != null && floatingTextSpawner != null) return;
 
         if (autoCreateHudIfMissing)
             CreateHudIfNeeded();
@@ -140,7 +146,7 @@ public class HealthUIController : MonoBehaviour
             hpRect.anchorMax = new Vector2(0f, 1f);
             hpRect.pivot = new Vector2(0f, 1f);
             hpRect.anchoredPosition = new Vector2(24f, -20f);
-            hpRect.sizeDelta = new Vector2(320f, 120f);
+            hpRect.sizeDelta = new Vector2(320f, 140f);
         }
         else
         {
@@ -173,6 +179,64 @@ public class HealthUIController : MonoBehaviour
             }
         }
 
+        if (healthBarFill == null)
+        {
+            Transform barRootTransform = hpRect.Find("HealthBarBackground");
+            RectTransform barRect;
+            Image barBg;
+
+            if (barRootTransform == null)
+            {
+                var barGo = new GameObject("HealthBarBackground");
+                barRect = barGo.AddComponent<RectTransform>();
+                barGo.transform.SetParent(hpRect, false);
+
+                barRect.anchorMin = new Vector2(0f, 1f);
+                barRect.anchorMax = new Vector2(0f, 1f);
+                barRect.pivot = new Vector2(0f, 1f);
+                barRect.anchoredPosition = new Vector2(0f, -56f);
+                barRect.sizeDelta = new Vector2(280f, 24f);
+
+                barBg = barGo.AddComponent<Image>();
+                barBg.color = topLeftBarBackgroundColor;
+            }
+            else
+            {
+                barRect = barRootTransform as RectTransform;
+                barBg = barRootTransform.GetComponent<Image>();
+                if (barBg != null)
+                    barBg.color = topLeftBarBackgroundColor;
+            }
+
+            Transform fillTransform = barRect != null ? barRect.Find("HealthBarFill") : null;
+            if (fillTransform == null)
+            {
+                var fillGo = new GameObject("HealthBarFill");
+                fillGo.transform.SetParent(barRect, false);
+
+                var fillRect = fillGo.AddComponent<RectTransform>();
+                fillRect.anchorMin = new Vector2(0f, 0f);
+                fillRect.anchorMax = new Vector2(1f, 1f);
+                fillRect.offsetMin = new Vector2(2f, 2f);
+                fillRect.offsetMax = new Vector2(-2f, -2f);
+
+                healthBarFill = fillGo.AddComponent<Image>();
+            }
+            else
+            {
+                healthBarFill = fillTransform.GetComponent<Image>();
+            }
+
+            if (healthBarFill != null)
+            {
+                healthBarFill.color = topLeftBarFillColor;
+                healthBarFill.type = Image.Type.Filled;
+                healthBarFill.fillMethod = Image.FillMethod.Horizontal;
+                healthBarFill.fillOrigin = (int)Image.OriginHorizontal.Left;
+                healthBarFill.fillAmount = 1f;
+            }
+        }
+
         if (floatingTextSpawner == null)
         {
             Transform floatingRoot = hpRect.Find("FloatingDamageRoot");
@@ -187,7 +251,7 @@ public class HealthUIController : MonoBehaviour
                 floatingRect.anchorMin = new Vector2(0f, 1f);
                 floatingRect.anchorMax = new Vector2(0f, 1f);
                 floatingRect.pivot = new Vector2(0f, 1f);
-                floatingRect.anchoredPosition = new Vector2(10f, -40f);
+                floatingRect.anchoredPosition = new Vector2(10f, -88f);
                 floatingRect.sizeDelta = new Vector2(260f, 100f);
             }
             else

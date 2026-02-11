@@ -73,8 +73,11 @@ public class PlayerMovement : MonoBehaviour
         if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame)
             return true;
 
-        // Fallback for legacy input configuration.
+#if ENABLE_LEGACY_INPUT_MANAGER
         return Input.GetMouseButtonDown(1);
+#else
+        return false;
+#endif
     }
 
     Vector2 GetPointerScreenPosition()
@@ -82,7 +85,11 @@ public class PlayerMovement : MonoBehaviour
         if (Mouse.current != null)
             return Mouse.current.position.ReadValue();
 
+#if ENABLE_LEGACY_INPUT_MANAGER
         return Input.mousePosition;
+#else
+        return Vector2.zero;
+#endif
     }
 
     bool TryGetClickedWorldPoint(Ray ray, out Vector3 point)
@@ -132,16 +139,31 @@ public class PlayerMovement : MonoBehaviour
 
     Vector2 ReadMoveInput()
     {
-        var keyboard = Keyboard.current;
-        if (keyboard == null) return Vector2.zero;
-
         float x = 0f;
         float y = 0f;
 
-        if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) x -= 1f;
-        if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) x += 1f;
-        if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) y += 1f;
-        if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed) y -= 1f;
+        var keyboard = Keyboard.current;
+        if (keyboard != null)
+        {
+            if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) x -= 1f;
+            if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) x += 1f;
+            if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) y += 1f;
+            if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed) y -= 1f;
+        }
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (x == 0f)
+        {
+            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) x -= 1f;
+            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) x += 1f;
+        }
+
+        if (y == 0f)
+        {
+            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)) y += 1f;
+            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow)) y -= 1f;
+        }
+#endif
 
         return new Vector2(x, y);
     }
