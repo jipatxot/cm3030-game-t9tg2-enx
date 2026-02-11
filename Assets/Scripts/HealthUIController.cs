@@ -8,9 +8,14 @@ public class HealthUIController : MonoBehaviour
     public TextMeshProUGUI healthText;
     public FloatingTextSpawner floatingTextSpawner;
 
+    [Header("Binding")]
+    public float rebindInterval = 0.25f;
+
     [Header("Colors")]
     public Color damageColor = new Color(0.9f, 0.2f, 0.2f, 1f);
     public Color healColor = new Color(0.2f, 0.9f, 0.2f, 1f);
+
+    float nextRebindTime;
 
     void Awake()
     {
@@ -26,6 +31,15 @@ public class HealthUIController : MonoBehaviour
     void OnDisable()
     {
         UnbindPlayer();
+    }
+
+    void Update()
+    {
+        if (playerHealth != null) return;
+        if (Time.unscaledTime < nextRebindTime) return;
+
+        nextRebindTime = Time.unscaledTime + Mathf.Max(0.05f, rebindInterval);
+        BindPlayer();
     }
 
     void BindPlayer()

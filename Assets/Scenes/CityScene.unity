@@ -2471,6 +2471,7 @@ GameObject:
   - component: {fileID: 1714554819}
   - component: {fileID: 1714554820}
   - component: {fileID: 1714554821}
+  - component: {fileID: 1714554829}
   - component: {fileID: 1714554825}
   - component: {fileID: 1714554822}
   - component: {fileID: 1714554823}
@@ -2567,6 +2568,26 @@ MonoBehaviour:
   generateOnStart: 0
   rotateTilesFlat: 1
   tileXRotation: 90
+--- !u!114 &1714554829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714554818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c881d8325dee499997fb1287eb89eefd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSpawner
+  roads: {fileID: 1714554821}
+  playerRoot: {fileID: 0}
+  playerPrefab: {fileID: 0}
+  spawnYOffset: 0.1
+  respawnOnRegenerate: 1
+  walkableAreaName: Walkable
+  bodyColor: {r: 0.1, g: 0.7, b: 0.2, a: 1}
+  headColor: {r: 0.95, g: 0.8, b: 0.7, a: 1}
 --- !u!114 &1714554822
 MonoBehaviour:
   m_ObjectHideFlags: 0
