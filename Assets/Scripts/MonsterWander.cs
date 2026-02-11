@@ -15,6 +15,7 @@ public class MonsterWander : MonoBehaviour
     public float loseRange = 9f;
     public float chaseRepathSeconds = 0.25f;
     public bool stopChasingInSafeZone = true;
+    public float playerSeparationDistance = 1.2f;
 
     [Header("Avoid Lit area")]
     public string litAreaName = "Lit";
@@ -27,10 +28,12 @@ public class MonsterWander : MonoBehaviour
     float nextChaseTime;
     bool isChasing;
     Transform playerTransform;
+    MonsterDamage monsterDamage;
 
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        monsterDamage = GetComponent<MonsterDamage>();
 
         int lit = NavMesh.GetAreaFromName(litAreaName);
         int litMask = (lit < 0) ? 0 : (1 << lit);
@@ -127,7 +130,24 @@ public class MonsterWander : MonoBehaviour
 
         if (Time.time < nextChaseTime) return;
 
-        agent.SetDestination(playerPos);
+        float stopDistance = Mathf.Max(agent.stoppingDistance, playerSeparationDistance);
+        if (monsterDamage != null)
+            stopDistance = Mathf.Max(stopDistance, monsterDamage.attackRange * 0.9f);
+
+        agent.stoppingDistance = stopDistance;
+
+        Vector3 toPlayer = playerPos - transform.position;
+        toPlayer.y = 0f;
+
+        if (toPlayer.sqrMagnitude <= stopDistance * stopDistance)
+        {
+            agent.ResetPath();
+            nextChaseTime = Time.time + Mathf.Max(0.05f, chaseRepathSeconds);
+            return;
+        }
+
+        Vector3 destination = playerPos - toPlayer.normalized * stopDistance;
+        agent.SetDestination(destination);
         nextChaseTime = Time.time + Mathf.Max(0.05f, chaseRepathSeconds);
     }
 }

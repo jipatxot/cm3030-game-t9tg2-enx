@@ -2,34 +2,44 @@ using UnityEngine;
 
 public class MonsterDamage : MonoBehaviour
 {
-    public int damagePerHit = 1;
-    public float hitCooldown = 0.6f;
+    public int damagePerTick = 1;
+    public float damageInterval = 1f;
+    public float attackRange = 1.4f;
 
-    float nextHitTime;
+    float nextDamageTime;
+    Transform playerTransform;
+    PlayerHealth playerHealth;
 
-    void OnTriggerStay(Collider other)
+    void Update()
     {
-        TryDamage(other);
+        if (!TryBindPlayer()) return;
+        if (playerTransform == null || playerHealth == null) return;
+
+        if (SafeZoneRegistry.IsPositionSafe(playerTransform.position)) return;
+
+        Vector3 toPlayer = playerTransform.position - transform.position;
+        toPlayer.y = 0f;
+        float sqrDistance = toPlayer.sqrMagnitude;
+        float sqrRange = attackRange * attackRange;
+
+        if (sqrDistance > sqrRange) return;
+        if (Time.time < nextDamageTime) return;
+
+        playerHealth.ApplyDamage(damagePerTick);
+        nextDamageTime = Time.time + Mathf.Max(0.05f, damageInterval);
     }
 
-    void OnCollisionStay(Collision collision)
+    bool TryBindPlayer()
     {
-        TryDamage(collision.collider);
-    }
+        if (playerTransform != null && playerHealth != null)
+            return true;
 
-    void TryDamage(Collider other)
-    {
-        if (other == null) return;
-        if (!other.CompareTag("Player")) return;
+        var player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null) return false;
 
-        if (Time.time < nextHitTime) return;
+        playerTransform = player.transform;
+        playerHealth = player.GetComponent<PlayerHealth>();
 
-        if (SafeZoneRegistry.IsPositionSafe(other.transform.position)) return;
-
-        var health = other.GetComponent<PlayerHealth>();
-        if (health == null) return;
-
-        health.ApplyDamage(damagePerHit);
-        nextHitTime = Time.time + hitCooldown;
+        return playerHealth != null;
     }
 }
