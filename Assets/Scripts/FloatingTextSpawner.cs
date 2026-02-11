@@ -20,6 +20,7 @@ public class FloatingTextSpawner : MonoBehaviour
 
         text.text = message;
         text.color = color;
+        text.alpha = 1f;
 
         StartCoroutine(AnimateText(text));
     }
@@ -36,6 +37,7 @@ public class FloatingTextSpawner : MonoBehaviour
         var go = new GameObject("FloatingText");
         go.transform.SetParent(GetSpawnRoot(), false);
         var text = go.AddComponent<TextMeshProUGUI>();
+        text.font = TMP_Settings.defaultFontAsset;
         text.fontSize = 24f;
         text.alignment = TextAlignmentOptions.Left;
         return text;
