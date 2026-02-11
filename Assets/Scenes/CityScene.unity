@@ -2565,7 +2565,7 @@ MonoBehaviour:
   groundRenderer: {fileID: 1138820698}
   autoFitToGround: 1
   paddingTiles: 2
-  generateOnStart: 0
+  generateOnStart: 1
   rotateTilesFlat: 1
   tileXRotation: 90
 --- !u!114 &1714554829
