@@ -91,7 +91,7 @@ public class PlayerSpawner : MonoBehaviour
         int area = NavMesh.GetAreaFromName(walkableAreaName);
         int mask = area >= 0 ? 1 << area : NavMesh.AllAreas;
 
-        if (TryFindSpawnCell(cx, cy, out Vector3 spawnPos, mask))
+        if (TryFindSpawnCell(cx, cy, mask, out Vector3 spawnPos))
             return spawnPos;
 
         Vector3 fallback = roads.GridToWorld(cx, cy);
