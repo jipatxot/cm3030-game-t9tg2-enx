@@ -13,6 +13,9 @@ public class PlayerSpawner : MonoBehaviour
     public float spawnYOffset = 0.1f;
     public bool respawnOnRegenerate = true;
     public string walkableAreaName = "Walkable";
+    public float spawnSearchRadius = 5f;
+    public float collisionCheckRadius = 0.45f;
+    public float collisionCheckHeight = 1f;
 
     [Header("Simple Player Visual")]
     public Color bodyColor = new Color(0.1f, 0.7f, 0.2f, 1f);
@@ -73,6 +76,9 @@ public class PlayerSpawner : MonoBehaviour
 
         player.tag = "Player";
 
+        if (player.GetComponent<PlayerHealth>() == null)
+            player.AddComponent<PlayerHealth>();
+
         EnsurePlayerHealthUi(player);
         EnsurePlayerWorldHealthBar(player);
     }
@@ -82,16 +88,76 @@ public class PlayerSpawner : MonoBehaviour
         int cx = Mathf.Clamp(roads.Width / 2, 0, roads.Width - 1);
         int cy = Mathf.Clamp(roads.Height / 2, 0, roads.Height - 1);
 
-        Vector3 basePos = roads.GridToWorld(cx, cy);
-        basePos.y += spawnYOffset;
-
         int area = NavMesh.GetAreaFromName(walkableAreaName);
         int mask = area >= 0 ? 1 << area : NavMesh.AllAreas;
 
-        if (NavMesh.SamplePosition(basePos, out NavMeshHit hit, 4f, mask))
-            return hit.position + Vector3.up * spawnYOffset;
+        if (TryFindSpawnCell(cx, cy, out Vector3 spawnPos, mask))
+            return spawnPos;
 
-        return basePos;
+        Vector3 fallback = roads.GridToWorld(cx, cy);
+        fallback.y += spawnYOffset;
+        return fallback;
+    }
+
+    bool TryFindSpawnCell(int centerX, int centerY, int walkableMask, out Vector3 result)
+    {
+        int maxRadius = Mathf.Max(roads.Width, roads.Height);
+
+        for (int radius = 0; radius <= maxRadius; radius++)
+        {
+            int minX = Mathf.Max(0, centerX - radius);
+            int maxX = Mathf.Min(roads.Width - 1, centerX + radius);
+            int minY = Mathf.Max(0, centerY - radius);
+            int maxY = Mathf.Min(roads.Height - 1, centerY + radius);
+
+            for (int x = minX; x <= maxX; x++)
+            {
+                for (int y = minY; y <= maxY; y++)
+                {
+                    if (radius > 0 && x > minX && x < maxX && y > minY && y < maxY)
+                        continue;
+
+                    if (!IsPreferredSpawnCell(x, y))
+                        continue;
+
+                    Vector3 basePos = roads.GridToWorld(x, y);
+                    basePos.y += spawnYOffset;
+
+                    if (!NavMesh.SamplePosition(basePos, out NavMeshHit hit, spawnSearchRadius, walkableMask))
+                        continue;
+
+                    Vector3 candidate = hit.position + Vector3.up * spawnYOffset;
+                    if (!IsSpawnPositionValid(candidate))
+                        continue;
+
+                    result = candidate;
+                    return true;
+                }
+            }
+        }
+
+        result = Vector3.zero;
+        return false;
+    }
+
+    bool IsPreferredSpawnCell(int x, int y)
+    {
+        if (roads == null || roads.Map == null) return false;
+
+        var cell = roads.Map[x, y];
+        return cell == RoadPathGenerator.CellType.Road
+            || cell == RoadPathGenerator.CellType.Path
+            || cell == RoadPathGenerator.CellType.Park
+            || cell == RoadPathGenerator.CellType.BoulevardMedian;
+    }
+
+    bool IsSpawnPositionValid(Vector3 position)
+    {
+        if (SafeZoneRegistry.IsPositionSafe(position))
+            return false;
+
+        Vector3 checkPos = position + Vector3.up * collisionCheckHeight;
+        return !Physics.CheckSphere(checkPos, Mathf.Max(0.05f, collisionCheckRadius), ~0, QueryTriggerInteraction.Ignore);
     }
 
 
