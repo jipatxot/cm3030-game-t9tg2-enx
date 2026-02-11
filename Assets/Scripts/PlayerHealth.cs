@@ -26,9 +26,14 @@ public class PlayerHealth : MonoBehaviour
         if (amount <= 0) return;
         if (currentHealth <= 0) return;
 
+        int before = currentHealth;
         currentHealth = Mathf.Max(0, currentHealth - amount);
+        int delta = currentHealth - before;
+
+        if (delta == 0) return;
+
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
-        OnHealthDelta?.Invoke(-amount);
+        OnHealthDelta?.Invoke(delta);
 
         if (currentHealth <= 0)
             OnPlayerDied?.Invoke();

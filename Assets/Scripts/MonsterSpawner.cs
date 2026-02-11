@@ -23,6 +23,7 @@ public class MonsterSpawner : MonoBehaviour
     public int attemptsPerMonster = 80;
     public float sampleRadius = 2.0f;
     public float spawnY = 0.1f;
+    public float minDistanceFromSafeZones = 1.2f;
 
     [Header("Combat")]
     public bool ensureMonsterCombatComponents = true;
@@ -185,12 +186,36 @@ public class MonsterSpawner : MonoBehaviour
 
             if (NavMesh.SamplePosition(guess, out NavMeshHit hit, sampleRadius, darkAreaMask))
             {
+                if (IsNearSafeZone(hit.position))
+                    continue;
+
                 point = hit.position;
                 return true;
             }
         }
 
         point = Vector3.zero;
+        return false;
+    }
+
+    bool IsNearSafeZone(Vector3 position)
+    {
+        float minDistance = Mathf.Max(0f, minDistanceFromSafeZones);
+        if (minDistance <= 0f)
+            return SafeZoneRegistry.IsPositionSafe(position);
+
+        if (SafeZoneRegistry.IsPositionSafe(position))
+            return true;
+
+        const int ringSamples = 8;
+        for (int i = 0; i < ringSamples; i++)
+        {
+            float angle = (Mathf.PI * 2f * i) / ringSamples;
+            Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * minDistance;
+            if (SafeZoneRegistry.IsPositionSafe(position + offset))
+                return true;
+        }
+
         return false;
     }
 

@@ -49,7 +49,12 @@ public class HealthUIController : MonoBehaviour
     {
         EnsureHudReferences();
 
-        if (playerHealth != null) return;
+        if (playerHealth != null)
+        {
+            HandleHealthChanged(playerHealth.currentHealth, playerHealth.maxHealth);
+            return;
+        }
+
         if (Time.unscaledTime < nextRebindTime) return;
 
         nextRebindTime = Time.unscaledTime + Mathf.Max(0.05f, rebindInterval);

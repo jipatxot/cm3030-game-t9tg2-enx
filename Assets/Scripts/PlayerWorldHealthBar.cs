@@ -22,7 +22,7 @@ public class PlayerWorldHealthBar : MonoBehaviour
     public float worldScale = 0.01f;
 
     [Header("Floating Damage Text")]
-    public bool showFloatingDamageText = true;
+    public bool showFloatingDamageText = false;
     public float floatingDamageDuration = 0.75f;
     public float floatingDamageHeight = 0.45f;
     public float floatingDamageScale = 0.12f;
@@ -88,6 +88,9 @@ public class PlayerWorldHealthBar : MonoBehaviour
         if (cam == null)
             cam = Camera.main;
         if (cam == null) return;
+
+        if (playerHealth != null)
+            HandleHealthChanged(playerHealth.currentHealth, playerHealth.maxHealth);
 
         Vector3 toCamera = barRoot.position - cam.transform.position;
         if (toCamera.sqrMagnitude < 0.0001f) return;

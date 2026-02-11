@@ -192,6 +192,7 @@ public class PlayerSpawner : MonoBehaviour
             worldBar = player.AddComponent<PlayerWorldHealthBar>();
 
         worldBar.playerHealth = health;
+        worldBar.showFloatingDamageText = false;
     }
     GameObject BuildSimplePlayer(Vector3 position)
     {
