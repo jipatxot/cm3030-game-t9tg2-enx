@@ -767,7 +767,7 @@ MonoBehaviour:
   autoFindURPLight2D: 1
   autoFindSpriteRenderers: 0
   includeInactiveChildren: 1
-  minBrightnessAtZero: 0.01
+  minBrightnessAtZero: 0.05
   disableWhenOff: 0
   countsTowardBlackout: 0
   debugCurrentPower: 0

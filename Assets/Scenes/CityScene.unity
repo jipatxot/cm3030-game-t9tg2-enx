@@ -2728,7 +2728,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e88e30f24d1b49caaf9eff50af0acdd2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerDecayManager
-  sessionLengthSeconds: 5
+  sessionLengthSeconds: 30
   isRunning: 1
   decayMultiplierOverTime:
     serializedVersion: 2
@@ -2767,8 +2767,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerRepairInteraction
   repairKey: 15
-  repairAllLamps: 1
-  onlyDarkLamps: 0
+  repairAll: 1
+  onlyDark: 0
+  logRepairedNames: 0
 --- !u!114 &1714554828
 MonoBehaviour:
   m_ObjectHideFlags: 0
