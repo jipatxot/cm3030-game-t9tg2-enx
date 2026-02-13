@@ -2568,26 +2568,6 @@ MonoBehaviour:
   generateOnStart: 0
   rotateTilesFlat: 1
   tileXRotation: 90
---- !u!114 &1714554829
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1714554818}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c881d8325dee499997fb1287eb89eefd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerSpawner
-  roads: {fileID: 1714554821}
-  playerRoot: {fileID: 0}
-  playerPrefab: {fileID: 0}
-  spawnYOffset: 0.1
-  respawnOnRegenerate: 1
-  walkableAreaName: Walkable
-  bodyColor: {r: 0.1, g: 0.7, b: 0.2, a: 1}
-  headColor: {r: 0.95, g: 0.8, b: 0.7, a: 1}
 --- !u!114 &1714554822
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2749,7 +2729,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e88e30f24d1b49caaf9eff50af0acdd2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerDecayManager
-  sessionLengthSeconds: 5
+  difficulty: 2
+  easyCurveSpeed: 0.75
+  normalCurveSpeed: 1
+  hardCurveSpeed: 1.4
+  easyMultiplierScale: 0.85
+  normalMultiplierScale: 1
+  hardMultiplierScale: 1.25
+  sessionLengthSeconds: 30
   isRunning: 1
   decayMultiplierOverTime:
     serializedVersion: 2
@@ -2788,8 +2775,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerRepairInteraction
   repairKey: 15
-  repairAllLamps: 1
-  onlyDarkLamps: 0
+  repairAll: 1
+  onlyDark: 0
+  darkThresholdPower: 0.001
+  logRepairedNames: 0
 --- !u!114 &1714554828
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2809,6 +2798,26 @@ MonoBehaviour:
   lampCountCheckInterval: 0.5
   offThresholdPower: 0.001
   showInfinityWhenNeverBlackout: 1
+--- !u!114 &1714554829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714554818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c881d8325dee499997fb1287eb89eefd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSpawner
+  roads: {fileID: 1714554821}
+  playerRoot: {fileID: 0}
+  playerPrefab: {fileID: 0}
+  spawnYOffset: 0.1
+  respawnOnRegenerate: 1
+  walkableAreaName: Walkable
+  bodyColor: {r: 0.1, g: 0.7, b: 0.2, a: 1}
+  headColor: {r: 0.95, g: 0.8, b: 0.7, a: 1}
 --- !u!1 &1876845673
 GameObject:
   m_ObjectHideFlags: 0
