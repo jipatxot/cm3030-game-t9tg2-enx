@@ -9,6 +9,7 @@ using UnityEngine.UI;
 /// - When A repairs (PowerRepairInteraction.OnRepaired), countdown recomputes immediately.
 /// - "Precise" means it integrates PowerDecayManager.decayMultiplierOverTime over time (LUT + inversion),
 ///   rather than estimating with only the current multiplier.
+/// - Supports per-light "stagger" (RemainingNoDecaySeconds) and per-light EffectiveDecayPerSecond.
 public class BlackoutCountdownPreciseUI : MonoBehaviour
 {
     [Header("UI (optional)")]
@@ -144,7 +145,7 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
 
             if (d.CurrentPower > offThresholdPower) allOffNow = false;
 
-            if (d.baseDecayPerSecond <= 0f && d.CurrentPower > offThresholdPower)
+            if (d.EffectiveDecayPerSecond <= 0f && d.CurrentPower > offThresholdPower)
             {
                 _neverBlackout = true;
                 _targetValid = false;
@@ -173,12 +174,19 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
             float p = d.CurrentPower;
             if (p <= offThresholdPower) continue;
 
-            float baseDecay = d.baseDecayPerSecond;
-            if (baseDecay <= 0f) continue;
+            float effDecay = d.EffectiveDecayPerSecond;
+            if (effDecay <= 0f) continue;
 
-            float requiredMultSeconds = p / baseDecay;
-            float tToZero = SolveTimeForRequiredIntegral(nowElapsed, requiredMultSeconds);
+            // If the device is currently in delay/grace, include that pause time first.
+            float pause = Mathf.Max(0f, d.RemainingNoDecaySeconds);
 
+            // Need integral(mult) over decay-active time = p / effDecay
+            float requiredMultSeconds = p / effDecay;
+
+            // Decay starts at now + pause (mult may have changed by then).
+            float tDecay = SolveTimeForRequiredIntegral(nowElapsed + pause, requiredMultSeconds);
+
+            float tToZero = pause + tDecay;
             if (tToZero > maxT) maxT = tToZero;
         }
 
@@ -186,16 +194,20 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         _targetBlackoutElapsed = nowElapsed + maxT;
     }
 
-    private float SolveTimeForRequiredIntegral(float nowElapsedSeconds, float required)
+
+    /// Solve smallest T>=0 such that ∫_{start}^{start+T} mult(s) ds = required.
+    /// mult(s) is defined by the curve on [0..sessionLength], then clamped to curve(1) afterwards.
+    private float SolveTimeForRequiredIntegral(float startElapsedSeconds, float required)
     {
         if (required <= 0f) return 0f;
 
         var mgr = PowerDecayManager.Instance;
         float sessionLen = Mathf.Max(0.0001f, mgr.sessionLengthSeconds);
 
-        float n0 = Mathf.Clamp01(nowElapsedSeconds / sessionLen);
+        float n0 = Mathf.Clamp01(startElapsedSeconds / sessionLen);
 
-        if (nowElapsedSeconds >= sessionLen)
+        // Past end: mult constant at end value
+        if (startElapsedSeconds >= sessionLen)
         {
             if (_multEnd <= 0f) return float.PositiveInfinity;
             return required / _multEnd;
@@ -372,8 +384,6 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         try { return Resources.GetBuiltinResource<Font>("Arial.ttf"); }
         catch { }
 
-        // Fallback: null is allowed (Text will still render in some setups),
-        // but it's better if you assign a font in Inspector.
         return null;
     }
 }

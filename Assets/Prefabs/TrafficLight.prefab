@@ -755,6 +755,14 @@ MonoBehaviour:
   startFullyPowered: 1
   decayStartDelaySeconds: 0
   graceAfterRepairSeconds: 0.5
+  enableVariation: 1
+  seedSource: 0
+  variationSeed: 12345
+  additionalStartDelayRange: {x: 0, y: 10}
+  capacityScaleRange: {x: 1, y: 1}
+  decayScaleRange: {x: 0.8, y: 1.2}
+  scaleStartingPower: 0
+  startingPowerScaleRange: {x: 1, y: 1}
   autoFindUnityLights: 1
   autoFindURPLight2D: 1
   autoFindSpriteRenderers: 0
@@ -764,6 +772,9 @@ MonoBehaviour:
   countsTowardBlackout: 0
   debugCurrentPower: 0
   debugNormalizedPower01: 0
+  debugCapacityScale: 1
+  debugDecayScale: 1
+  debugExtraStartDelay: 0
 --- !u!1 &8746518184838811130
 GameObject:
   m_ObjectHideFlags: 0
