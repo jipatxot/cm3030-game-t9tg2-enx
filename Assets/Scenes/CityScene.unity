@@ -2728,6 +2728,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e88e30f24d1b49caaf9eff50af0acdd2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerDecayManager
+  difficulty: 2
+  easyCurveSpeed: 0.75
+  normalCurveSpeed: 1
+  hardCurveSpeed: 1.4
+  easyMultiplierScale: 0.85
+  normalMultiplierScale: 1
+  hardMultiplierScale: 1.25
   sessionLengthSeconds: 30
   isRunning: 1
   decayMultiplierOverTime:

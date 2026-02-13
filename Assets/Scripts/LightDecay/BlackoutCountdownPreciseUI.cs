@@ -202,7 +202,7 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         if (required <= 0f) return 0f;
 
         var mgr = PowerDecayManager.Instance;
-        float sessionLen = Mathf.Max(0.0001f, mgr.sessionLengthSeconds);
+        float sessionLen = Mathf.Max(0.0001f, mgr.EffectiveSessionLengthSeconds);
 
         float n0 = Mathf.Clamp01(startElapsedSeconds / sessionLen);
 
@@ -254,24 +254,23 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         if (_cumIntegral == null || _cumIntegral.Length != N)
             _cumIntegral = new float[N];
 
-        var curve = mgr.decayMultiplierOverTime;
         float dx = 1f / (N - 1);
 
         _cumIntegral[0] = 0f;
-        float prevY = Mathf.Max(0f, curve.Evaluate(0f));
+        float prevY = Mathf.Max(0f, mgr.EvaluateScaledCurve01(0f));
         float acc = 0f;
 
         for (int i = 1; i < N; i++)
         {
             float x = i * dx;
-            float y = Mathf.Max(0f, curve.Evaluate(x));
+            float y = Mathf.Max(0f, mgr.EvaluateScaledCurve01(x));
             acc += (prevY + y) * 0.5f * dx; // trapezoid
             _cumIntegral[i] = acc;
             prevY = y;
         }
 
         _integralTotal = _cumIntegral[N - 1];
-        _multEnd = Mathf.Max(0f, curve.Evaluate(1f));
+        _multEnd = Mathf.Max(0f, mgr.EvaluateScaledCurve01(1f));
     }
 
     private float IntegralAt(float n01)
