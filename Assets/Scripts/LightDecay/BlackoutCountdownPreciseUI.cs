@@ -3,11 +3,12 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-/// Precise blackout countdown UI:
-/// - Displays mm:ss at top of screen.
-/// - Countdown is EXACT w.r.t. decayMultiplierOverTime curve integration (via precomputed integral + inversion).
-/// - When ALL StreetLampPower are off => shows 00:00.
-/// - When A repairs (or any external trigger calls RequestRecompute) => target time recomputed, countdown restarts.
+/// Precise blackout countdown UI (for shared LightPowerDecay component).
+/// - Shows mm:ss at top of screen.
+/// - Countdown becomes 00:00 when ALL counted lights are off.
+/// - When A repairs (PowerRepairInteraction.OnRepaired), countdown recomputes immediately.
+/// - "Precise" means it integrates PowerDecayManager.decayMultiplierOverTime over time (LUT + inversion),
+///   rather than estimating with only the current multiplier.
 public class BlackoutCountdownPreciseUI : MonoBehaviour
 {
     [Header("UI (optional)")]
@@ -16,21 +17,17 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
 
     public string prefix = "Blackout in ";
 
-    [Header("Precision / Recompute")]
-    [Tooltip("Integral LUT samples. Higher = more precise but slightly more memory.")]
+    [Header("Precision")]
     [Range(256, 16384)] public int integralSamples = 4096;
 
-    [Tooltip("Recompute automatically if lamp count changes.")]
+    [Header("Recompute")]
     public bool recomputeOnLampCountChange = true;
-
-    [Tooltip("How often (seconds) to check lamp count changes.")]
     [Min(0.05f)] public float lampCountCheckInterval = 0.5f;
 
     [Tooltip("Treat power <= this as 'off'.")]
     [Min(0f)] public float offThresholdPower = 0.001f;
 
     [Header("Edge Cases")]
-    [Tooltip("If any lamp never drains (baseDecayPerSecond<=0) and has power, blackout never happens.")]
     public bool showInfinityWhenNeverBlackout = true;
 
     // Target blackout time expressed in PowerDecayManager.ElapsedSeconds timeline
@@ -39,12 +36,12 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
     private bool _neverBlackout = false;
 
     // LUT for integral of multiplier curve over normalized time [0..1]
-    private float[] _cumIntegral; // length = integralSamples
+    private float[] _cumIntegral;
     private float _integralTotal; // I(1)
     private float _multEnd;       // curve(1)
 
-    private int _lastLampCount = -1;
-    private float _lampCountTimer = 0f;
+    private int _lastCount = -1;
+    private float _countTimer = 0f;
 
     private void OnEnable()
     {
@@ -58,8 +55,7 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
 
     private void Awake()
     {
-        if (countdownText == null)
-            CreateDefaultUI();
+        EnsureText();
     }
 
     private void Start()
@@ -72,7 +68,6 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
     {
         var mgr = PowerDecayManager.Instance;
 
-        // No Manager: Displays 00:00 (if it can be displayed).
         if (mgr == null)
         {
             if (EnsureText())
@@ -80,27 +75,23 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
             return;
         }
 
-        // Ensure the UI exists; otherwise, return immediately (to avoid NRE).
-        if (!EnsureText())
-            return;
+        if (!EnsureText()) return;
 
-        // Optional: Changes in the number of detection lights (during urban reconstruction)
         if (recomputeOnLampCountChange)
         {
-            _lampCountTimer += Time.deltaTime;
-            if (_lampCountTimer >= lampCountCheckInterval)
+            _countTimer += Time.deltaTime;
+            if (_countTimer >= lampCountCheckInterval)
             {
-                _lampCountTimer = 0f;
-                int count = GetLamps().Count;
-                if (count != _lastLampCount)
+                _countTimer = 0f;
+                int count = GetDevices().Count;
+                if (count != _lastCount)
                 {
-                    _lastLampCount = count;
+                    _lastCount = count;
                     RecomputeTarget();
                 }
             }
         }
 
-        // Never completely off: Display ∞
         if (_neverBlackout && showInfinityWhenNeverBlackout)
         {
             countdownText.text = prefix + "∞";
@@ -114,20 +105,11 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         countdownText.text = prefix + FormatTimeMMSS(remaining);
     }
 
-
-    
-    private bool EnsureText()
+    private void HandleRepaired()
     {
-        if (countdownText != null) return true;
-
-        CreateDefaultUI();
-
-        // Check again after CreateDefaultUI
-        return countdownText != null;
+        RecomputeTarget();
     }
 
-
-    /// Call this whenever you change lamp power externally (e.g., repair).
     public void RecomputeTarget()
     {
         var mgr = PowerDecayManager.Instance;
@@ -139,12 +121,12 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
             return;
         }
 
-        BuildIntegralLUT(); // safe to call; will rebuild if curve/params changed
+        BuildIntegralLUT();
 
-        var lamps = GetLamps();
-        _lastLampCount = lamps.Count;
+        var devices = GetDevices();
+        _lastCount = devices.Count;
 
-        if (lamps.Count == 0)
+        if (devices.Count == 0)
         {
             _targetValid = true;
             _neverBlackout = false;
@@ -152,18 +134,17 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
             return;
         }
 
-        // If all already off => 0
         bool allOffNow = true;
 
-        // If any lamp never drains but has power => blackout never happens
-        for (int i = 0; i < lamps.Count; i++)
+        // If any device never drains but has power, blackout never happens
+        for (int i = 0; i < devices.Count; i++)
         {
-            var l = lamps[i];
-            if (l == null) continue;
+            var d = devices[i];
+            if (d == null) continue;
 
-            if (l.CurrentPower > offThresholdPower) allOffNow = false;
+            if (d.CurrentPower > offThresholdPower) allOffNow = false;
 
-            if (l.baseDecayPerSecond <= 0f && l.CurrentPower > offThresholdPower)
+            if (d.baseDecayPerSecond <= 0f && d.CurrentPower > offThresholdPower)
             {
                 _neverBlackout = true;
                 _targetValid = false;
@@ -181,25 +162,23 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
 
         _neverBlackout = false;
 
-        // Compute exact time-to-zero for each lamp, take the MAX (last one to die)
         float nowElapsed = mgr.ElapsedSeconds;
         float maxT = 0f;
 
-        for (int i = 0; i < lamps.Count; i++)
+        for (int i = 0; i < devices.Count; i++)
         {
-            var l = lamps[i];
-            if (l == null) continue;
+            var d = devices[i];
+            if (d == null) continue;
 
-            float p = l.CurrentPower;
-            if (p <= offThresholdPower) continue; // already off
+            float p = d.CurrentPower;
+            if (p <= offThresholdPower) continue;
 
-            float baseDecay = l.baseDecayPerSecond;
-            if (baseDecay <= 0f) continue; // handled above as never-blackout
+            float baseDecay = d.baseDecayPerSecond;
+            if (baseDecay <= 0f) continue;
 
-            // Need integral(mult) over time = p / baseDecay
             float requiredMultSeconds = p / baseDecay;
-
             float tToZero = SolveTimeForRequiredIntegral(nowElapsed, requiredMultSeconds);
+
             if (tToZero > maxT) maxT = tToZero;
         }
 
@@ -207,15 +186,6 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         _targetBlackoutElapsed = nowElapsed + maxT;
     }
 
-    private void HandleRepaired()
-    {
-        // After A repair, power jumps up -> recompute target
-        RecomputeTarget();
-    }
-
-
-    /// Solve smallest T>=0 such that ∫_{now}^{now+T} mult(s) ds = required.
-    /// mult(s) is defined by the curve on [0..sessionLength], then clamped to curve(1) afterwards.
     private float SolveTimeForRequiredIntegral(float nowElapsedSeconds, float required)
     {
         if (required <= 0f) return 0f;
@@ -223,30 +193,24 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         var mgr = PowerDecayManager.Instance;
         float sessionLen = Mathf.Max(0.0001f, mgr.sessionLengthSeconds);
 
-        // normalized current time
         float n0 = Mathf.Clamp01(nowElapsedSeconds / sessionLen);
 
-        // If we're already past the session end, mult is constant at end value
         if (nowElapsedSeconds >= sessionLen)
         {
             if (_multEnd <= 0f) return float.PositiveInfinity;
             return required / _multEnd;
         }
 
-        // integral capacity remaining within the curve region
         float I0 = IntegralAt(n0);
         float I1 = _integralTotal;
         float remainingInCurve = sessionLen * (I1 - I0);
 
         if (required <= remainingInCurve)
         {
-            // Find n1 in [n0, 1] such that sessionLen*(I(n1)-I(n0)) = required
             float targetI = I0 + (required / sessionLen);
 
             float lo = n0;
             float hi = 1f;
-
-            // 30-40 iterations are enough for float precision
             for (int it = 0; it < 40; it++)
             {
                 float mid = (lo + hi) * 0.5f;
@@ -260,7 +224,6 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         }
         else
         {
-            // Use remaining curve integral then linear tail
             float leftover = required - remainingInCurve;
             if (_multEnd <= 0f) return float.PositiveInfinity;
 
@@ -270,16 +233,12 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         }
     }
 
-
-    /// Build cumulative integral LUT of decayMultiplierOverTime on normalized [0..1].
     private void BuildIntegralLUT()
     {
         var mgr = PowerDecayManager.Instance;
         if (mgr == null) return;
 
         int N = Mathf.Max(2, integralSamples);
-
-        // Build if not exists or size changed
         if (_cumIntegral == null || _cumIntegral.Length != N)
             _cumIntegral = new float[N];
 
@@ -294,8 +253,7 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         {
             float x = i * dx;
             float y = Mathf.Max(0f, curve.Evaluate(x));
-            // trapezoid
-            acc += (prevY + y) * 0.5f * dx;
+            acc += (prevY + y) * 0.5f * dx; // trapezoid
             _cumIntegral[i] = acc;
             prevY = y;
         }
@@ -304,8 +262,6 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         _multEnd = Mathf.Max(0f, curve.Evaluate(1f));
     }
 
-
-    /// Integral I(n) = ∫_0^n curve(u) du, using LUT linear interpolation.
     private float IntegralAt(float n01)
     {
         if (_cumIntegral == null || _cumIntegral.Length < 2) return 0f;
@@ -321,26 +277,35 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         return Mathf.Lerp(_cumIntegral[i0], _cumIntegral[i1], t);
     }
 
-    private static List<StreetLampPower> GetLamps()
+    private static List<LightPowerDecay> GetDevices()
     {
+        // Prefer manager registry (spawn-friendly)
         if (PowerDecayManager.Instance != null && PowerDecayManager.Instance.Lamps != null)
         {
-            var list = new List<StreetLampPower>(PowerDecayManager.Instance.Lamps.Count);
-            for (int i = 0; i < PowerDecayManager.Instance.Lamps.Count; i++)
+            var src = PowerDecayManager.Instance.Lamps;
+            var list = new List<LightPowerDecay>(src.Count);
+            for (int i = 0; i < src.Count; i++)
             {
-                var l = PowerDecayManager.Instance.Lamps[i];
-                if (l != null) list.Add(l);
+                var d = src[i];
+                if (d != null && d.countsTowardBlackout)
+                    list.Add(d);
             }
             return list;
         }
 
 #if UNITY_2023_1_OR_NEWER
-        return new List<StreetLampPower>(
-            Object.FindObjectsByType<StreetLampPower>(FindObjectsSortMode.None)
-        );
+        var found = Object.FindObjectsByType<LightPowerDecay>(FindObjectsSortMode.None);
 #else
-        return new List<StreetLampPower>(Object.FindObjectsOfType<StreetLampPower>());
+        var found = Object.FindObjectsOfType<LightPowerDecay>();
 #endif
+        var filtered = new List<LightPowerDecay>(found.Length);
+        for (int i = 0; i < found.Length; i++)
+        {
+            var d = found[i];
+            if (d != null && d.countsTowardBlackout)
+                filtered.Add(d);
+        }
+        return filtered;
     }
 
     private static string FormatTimeMMSS(float seconds)
@@ -361,6 +326,14 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         return v.ToString();
     }
 
+    private bool EnsureText()
+    {
+        if (countdownText != null) return true;
+
+        CreateDefaultUI();
+        return countdownText != null;
+    }
+
     private void CreateDefaultUI()
     {
         var canvasGO = new GameObject("BlackoutCountdownCanvas");
@@ -374,17 +347,7 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         textGO.transform.SetParent(canvasGO.transform, false);
 
         var t = textGO.AddComponent<Text>();
-        Font f = null;
-        try
-        {
-            f = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        }
-        catch
-        {
-            f = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        }
-        t.font = f;
-
+        t.font = LoadBuiltinFontSafe();
         t.alignment = TextAnchor.UpperCenter;
         t.raycastTarget = false;
         t.fontSize = 28;
@@ -395,8 +358,22 @@ public class BlackoutCountdownPreciseUI : MonoBehaviour
         rt.anchorMax = new Vector2(0.5f, 1f);
         rt.pivot = new Vector2(0.5f, 1f);
         rt.anchoredPosition = new Vector2(0f, -20f);
-        rt.sizeDelta = new Vector2(800f, 60f);
+        rt.sizeDelta = new Vector2(900f, 60f);
 
         countdownText = t;
+    }
+
+    private static Font LoadBuiltinFontSafe()
+    {
+        // Unity 6+ prefers LegacyRuntime.ttf; older versions may still have Arial.ttf.
+        try { return Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); }
+        catch { }
+
+        try { return Resources.GetBuiltinResource<Font>("Arial.ttf"); }
+        catch { }
+
+        // Fallback: null is allowed (Text will still render in some setups),
+        // but it's better if you assign a font in Inspector.
+        return null;
     }
 }

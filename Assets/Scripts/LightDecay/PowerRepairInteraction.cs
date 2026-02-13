@@ -2,109 +2,75 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-
-/// Press A to restore StreetLamp brightness (power).
-/// Attach to any always-active GameObject (e.g., CityGenerator).
 public class PowerRepairInteraction : MonoBehaviour
 {
-    [Header("Input")]
     public Key repairKey = Key.A;
 
-    [Header("Repair Behavior")]
-    [Tooltip("If true, repairs every lamp at once when the key is pressed.")]
-    public bool repairAllLamps = true;
+    public bool repairAll = true;
+    public bool onlyDark = false;
 
-    [Tooltip("If true, only repairs lamps that are currently dark/empty power.")]
-    public bool onlyDarkLamps = false;
-
-    
-    
     public delegate void RepairedEvent();
     public static event RepairedEvent OnRepaired;
 
-    
-    
     private void Update()
     {
         var kb = Keyboard.current;
         if (kb == null) return;
-
         if (!kb[repairKey].wasPressedThisFrame) return;
 
-        int repaired = repairAllLamps ? RepairAll() : RepairOneAny();
+        int repaired = repairAll ? RepairAll() : RepairOneAny();
 
         if (repaired > 0)
         {
-            Debug.Log($"[PowerRepairInteraction] Repaired {repaired} lamp(s).");
+            Debug.Log($"[PowerRepairInteraction] Repaired {repaired} light objects.");
             OnRepaired?.Invoke();
         }
-
         else
-            Debug.Log("[PowerRepairInteraction] No lamp repaired (none found / all already lit).");
+        {
+            Debug.Log("[PowerRepairInteraction] No light object repaired.");
+        }
     }
 
     private int RepairAll()
     {
-        var lamps = GetLamps();
+        var list = GetAll();
         int count = 0;
-
-        for (int i = 0; i < lamps.Count; i++)
+        for (int i = 0; i < list.Count; i++)
         {
-            var l = lamps[i];
-            if (l == null) continue;
-
-            if (onlyDarkLamps && l.CurrentPower > 0f)
-                continue;
-
-            l.RestoreToFull();
+            var d = list[i];
+            if (d == null) continue;
+            if (onlyDark && d.CurrentPower > 0.001f) continue;
+            d.RestoreToFull();
             count++;
         }
-
         return count;
     }
 
     private int RepairOneAny()
     {
-        var lamps = GetLamps();
-
-        for (int i = 0; i < lamps.Count; i++)
+        var list = GetAll();
+        for (int i = 0; i < list.Count; i++)
         {
-            var l = lamps[i];
-            if (l == null) continue;
-
-            if (onlyDarkLamps && l.CurrentPower > 0f)
-                continue;
-
-            l.RestoreToFull();
+            var d = list[i];
+            if (d == null) continue;
+            if (onlyDark && d.CurrentPower > 0.001f) continue;
+            d.RestoreToFull();
             return 1;
         }
-
         return 0;
     }
 
-    private static List<StreetLampPower> GetLamps()
+    private static List<LightPowerDecay> GetAll()
     {
-        if (PowerDecayManager.Instance != null && PowerDecayManager.Instance.Lamps != null)
-        {
-            var list = new List<StreetLampPower>(PowerDecayManager.Instance.Lamps.Count);
-            for (int i = 0; i < PowerDecayManager.Instance.Lamps.Count; i++)
-            {
-                var l = PowerDecayManager.Instance.Lamps[i];
-                if (l != null) list.Add(l);
-            }
-            return list;
-        }
+        if (PowerDecayManager.Instance != null && PowerDecayManager.Instance.Devices != null)
+            return new List<LightPowerDecay>(PowerDecayManager.Instance.Devices);
 
-        // return new List<StreetLampPower>(Object.FindObjectsOfType<StreetLampPower>());
-        // Assets\Codes\PowerRepairInteraction.cs(87,42): warning CS0618: 'Object.FindObjectsOfType<T>()' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not. FindObjectsOfType sorts the results by InstanceID but if you do not need this using FindObjectSortMode.None is considerably faster.'
-        
 #if UNITY_2023_1_OR_NEWER
-        return new List<StreetLampPower>(
-            Object.FindObjectsByType<StreetLampPower>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+        return new List<LightPowerDecay>(
+            Object.FindObjectsByType<LightPowerDecay>(FindObjectsSortMode.None)
         );
 #else
-    return new List<StreetLampPower>(Object.FindObjectsOfType<StreetLampPower>(true)); // includeInactive
+        return new List<LightPowerDecay>(Object.FindObjectsOfType<LightPowerDecay>());
 #endif
-
     }
 }

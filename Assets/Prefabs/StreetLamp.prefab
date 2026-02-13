@@ -616,7 +616,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 751949756613055705}
-  - component: {fileID: 2566480026064735828}
+  - component: {fileID: -6846564034263034525}
   m_Layer: 6
   m_Name: StreetLamp
   m_TagString: Untagged
@@ -645,7 +645,7 @@ Transform:
   - {fileID: 2874623478892126278}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2566480026064735828
+--- !u!114 &-6846564034263034525
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -654,18 +654,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 6682954109632188068}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af86a0efdb6862e43992a9cba762aabe, type: 3}
+  m_Script: {fileID: 11500000, guid: b9a599b0c0a0486c8cf93d4419b43ea6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StreetLampPower
+  m_EditorClassIdentifier: Assembly-CSharp::LightPowerDecay
   maxPower: 200
   baseDecayPerSecond: 5
   startFullyPowered: 1
   decayStartDelaySeconds: 0
   graceAfterRepairSeconds: 0.5
-  autoFindChildLights: 1
-  includeInactiveLights: 1
+  autoFindUnityLights: 1
+  autoFindURPLight2D: 1
+  autoFindSpriteRenderers: 0
+  includeInactiveChildren: 1
   minBrightnessAtZero: 0
-  disableLightsWhenOff: 1
+  disableWhenOff: 0
+  countsTowardBlackout: 1
   debugCurrentPower: 0
   debugNormalizedPower01: 0
 --- !u!1 &8876812256552832091
