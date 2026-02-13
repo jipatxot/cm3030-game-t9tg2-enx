@@ -32,6 +32,6 @@ public class CityInput : MonoBehaviour
         if (roads != null)
             roads.GenerateAndSpawn();
         else
-            UnityEngine.Debug.LogWarning("CityInput: roads reference not set.");
+            UnityEngine.Debug.LogWarning("CityInput: roads reference not set."); 
     }
 }

@@ -19,8 +19,19 @@ public class MonsterDamage : MonoBehaviour
 
         Vector3 toPlayer = playerTransform.position - transform.position;
         toPlayer.y = 0f;
+        float agentR = 0f;
+        var a = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (a != null) agentR = a.radius;
+
+        float playerR = 0.35f; // matches your PlayerSpawner controller radius
+        var cc = playerTransform.GetComponent<CharacterController>();
+        if (cc != null) playerR = cc.radius;
+
+        // Effective hit range matches what you see in-game
+        float effectiveRange = attackRange + agentR + playerR;
+
         float sqrDistance = toPlayer.sqrMagnitude;
-        float sqrRange = attackRange * attackRange;
+        float sqrRange = effectiveRange * effectiveRange;
 
         if (sqrDistance > sqrRange) return;
         if (Time.time < nextDamageTime) return;

@@ -10,15 +10,30 @@ public class PlayerMovement : MonoBehaviour
     public float clickStopDistance = 0.25f;
     public LayerMask clickMask = ~0;
 
+    [Header("Gravity / Grounding")]
+    public float gravity = 25f;
+    public float groundedStick = 2f;
+    public float groundCheckDistance = 0.35f;
+
+    [Header("Controller anti-step")]
+    public float stepOffset = 0.15f;
+    public float slopeLimit = 45f;
+
     CharacterController controller;
     Camera mainCamera;
     Vector3 clickTarget;
     bool hasClickTarget;
 
+    float verticalVel;
+
     void Awake()
     {
         controller = GetComponent<CharacterController>();
         mainCamera = Camera.main;
+
+        // Reduce unintended climbing
+        controller.stepOffset = stepOffset;
+        controller.slopeLimit = slopeLimit;
     }
 
     void Update()
@@ -34,16 +49,42 @@ public class PlayerMovement : MonoBehaviour
         if (move.sqrMagnitude < 0.0001f && hasClickTarget)
             move = GetClickMoveVector();
 
-        if (move.sqrMagnitude < 0.0001f) return;
+        // Grounding and gravity
+        bool grounded = IsGrounded();
+        if (grounded && verticalVel < 0f)
+            verticalVel = -groundedStick;
 
-        if (move.sqrMagnitude > 1f)
-            move.Normalize();
+        verticalVel -= gravity * Time.deltaTime;
 
-        Vector3 desired = move * (moveSpeed * Time.deltaTime);
-        controller.Move(desired);
+        Vector3 horizontal = Vector3.zero;
 
-        Quaternion target = Quaternion.LookRotation(move, Vector3.up);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, target, rotationSpeed * Time.deltaTime);
+        if (move.sqrMagnitude >= 0.0001f)
+        {
+            if (move.sqrMagnitude > 1f) move.Normalize();
+            horizontal = move * moveSpeed;
+
+            Quaternion target = Quaternion.LookRotation(move, Vector3.up);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, target, rotationSpeed * Time.deltaTime);
+        }
+
+        Vector3 velocity = horizontal + Vector3.up * verticalVel;
+        controller.Move(velocity * Time.deltaTime);
+    }
+
+    bool IsGrounded()
+    {
+        if (controller.isGrounded) return true;
+
+        Vector3 origin = transform.position + Vector3.up * 0.05f;
+        return Physics.SphereCast(
+            origin,
+            controller.radius * 0.9f,
+            Vector3.down,
+            out _,
+            groundCheckDistance,
+            ~0,
+            QueryTriggerInteraction.Ignore
+        );
     }
 
     void HandleRightClickMoveTarget()

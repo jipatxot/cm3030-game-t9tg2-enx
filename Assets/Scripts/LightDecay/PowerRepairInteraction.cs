@@ -1,25 +1,26 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Press a key (default A) to repair lights (restore power to full).
-/// 
-/// NOTE: Your teammate removed LightSource.cs and replaced it with SafeZoneRegistry/LampSafeZone,
-/// so this script MUST NOT reference LightSource anymore.
-/// Repair simply calls LightPowerDecay.RestoreToFull() which will also re-enable/dim lights correctly.
+/// Press a key (default F) to repair the nearest light within a radius around the player.
+/// Repair calls LightPowerDecay.RestoreToFull().
 /// </summary>
 public class PowerRepairInteraction : MonoBehaviour
 {
-    public Key repairKey = Key.A;
+    [Header("Input")]
+    public Key repairKey = Key.F;
 
-    [Header("Repair Behavior")]
-    [Tooltip("If true, repairs ALL LightPowerDecay objects in the scene. If false, repairs the first match.")]
-    public bool repairAll = true;
+    [Header("Repair Area")]
+    public float repairRadius = 2.2f;
 
-    [Tooltip("If true, only repairs lights that are currently 'dark' (power <= threshold).")]
+    [Header("Repair Timing")]
+    [Tooltip("0 = instant. If > 0, waits then applies repair.")]
+    public float repairDurationSeconds = 0f;
+
+    [Header("Rules")]
     public bool onlyDark = false;
-
     [Min(0f)] public float darkThresholdPower = 0.001f;
 
     [Header("Debug")]
@@ -28,76 +29,107 @@ public class PowerRepairInteraction : MonoBehaviour
     public delegate void RepairedEvent();
     public static event RepairedEvent OnRepaired;
 
-    private void Update()
+    Transform player;
+    Coroutine repairing;
+
+    void Update()
     {
         var kb = Keyboard.current;
         if (kb == null) return;
+
         if (!kb[repairKey].wasPressedThisFrame) return;
 
-        int repaired = repairAll ? RepairAll() : RepairOneAny();
+        if (repairing != null) return;
 
-        if (repaired > 0)
+        if (!TryGetPlayer(out var p)) return;
+
+        var light = FindNearestInRadius(p.position, repairRadius);
+        if (light == null)
         {
-            Debug.Log($"[PowerRepairInteraction] Repaired {repaired} light object(s).");
+            Debug.Log("[PowerRepairInteraction] No light in range.");
+            return;
+        }
+
+        if (onlyDark && light.CurrentPower > darkThresholdPower)
+        {
+            Debug.Log("[PowerRepairInteraction] Light already lit.");
+            return;
+        }
+
+        if (repairDurationSeconds <= 0f)
+        {
+            light.RestoreToFull();
+            if (logRepairedNames) Debug.Log($"[PowerRepairInteraction] -> {light.gameObject.name}");
+            OnRepaired?.Invoke();
+            return;
+        }
+
+        repairing = StartCoroutine(RepairAfterDelay(light, repairDurationSeconds));
+    }
+
+    IEnumerator RepairAfterDelay(LightPowerDecay light, float seconds)
+    {
+        float t = 0f;
+
+        while (t < seconds)
+        {
+            if (light == null) { repairing = null; yield break; }
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        if (light != null)
+        {
+            light.RestoreToFull();
+            if (logRepairedNames) Debug.Log($"[PowerRepairInteraction] -> {light.gameObject.name}");
             OnRepaired?.Invoke();
         }
-        else
-        {
-            Debug.Log("[PowerRepairInteraction] No light object repaired.");
-        }
+
+        repairing = null;
     }
 
-    private int RepairAll()
+    bool TryGetPlayer(out Transform p)
+    {
+        if (player != null) { p = player; return true; }
+
+        var go = GameObject.FindGameObjectWithTag("Player");
+        if (go == null) { p = null; return false; }
+
+        player = go.transform;
+        p = player;
+        return true;
+    }
+
+    LightPowerDecay FindNearestInRadius(Vector3 center, float radius)
     {
         var list = GetAllIncludingInactive();
-        int count = 0;
+        float r2 = radius * radius;
+
+        LightPowerDecay best = null;
+        float bestD2 = float.PositiveInfinity;
 
         for (int i = 0; i < list.Count; i++)
         {
             var d = list[i];
             if (d == null) continue;
 
-            if (onlyDark && d.CurrentPower > darkThresholdPower) continue;
+            Vector3 pos = d.transform.position;
+            pos.y = center.y;
 
-            d.RestoreToFull();
+            float d2 = (pos - center).sqrMagnitude;
+            if (d2 > r2) continue;
 
-            if (logRepairedNames)
-                Debug.Log($"[PowerRepairInteraction] -> {d.gameObject.name} (activeInHierarchy={d.gameObject.activeInHierarchy})");
-
-            count++;
+            if (d2 < bestD2)
+            {
+                bestD2 = d2;
+                best = d;
+            }
         }
 
-        return count;
+        return best;
     }
 
-    private int RepairOneAny()
-    {
-        var list = GetAllIncludingInactive();
-
-        for (int i = 0; i < list.Count; i++)
-        {
-            var d = list[i];
-            if (d == null) continue;
-
-            if (onlyDark && d.CurrentPower > darkThresholdPower) continue;
-
-            d.RestoreToFull();
-
-            if (logRepairedNames)
-                Debug.Log($"[PowerRepairInteraction] -> {d.gameObject.name} (activeInHierarchy={d.gameObject.activeInHierarchy})");
-
-            return 1;
-        }
-
-        return 0;
-    }
-
-    /// <summary>
-    /// Scene scan (including inactive) so we don't miss objects that are not registered
-    /// in PowerDecayManager (e.g., if something got disabled/unregistered).
-    /// This runs only when you press the key, so it won't impact performance.
-    /// </summary>
-    private static List<LightPowerDecay> GetAllIncludingInactive()
+    static List<LightPowerDecay> GetAllIncludingInactive()
     {
 #if UNITY_2023_1_OR_NEWER
         var found = Object.FindObjectsByType<LightPowerDecay>(FindObjectsInactive.Include, FindObjectsSortMode.None);

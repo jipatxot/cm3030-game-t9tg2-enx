@@ -1,12 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-/// Global timer + difficulty scaling for power decay.
-/// All LightPowerDecay instances query GetDecayMultiplier() each frame.
-/// 
-/// Difficulty is selected in the Inspector on the scene's PowerDecayManager.
-/// Harder difficulty => decay speeds up sooner => blackout happens earlier.
 public class PowerDecayManager : MonoBehaviour
 {
     public static PowerDecayManager Instance { get; private set; }
@@ -32,7 +26,7 @@ public class PowerDecayManager : MonoBehaviour
     [Min(0f)] public float hardMultiplierScale = 1.20f;
 
     [Header("Session Timing")]
-    [Tooltip("Baseline length used as the NORMAL difficulty reference (seconds).")]
+    [Tooltip("How long the session lasts until sunrise (seconds). Difficulty does NOT change this.")]
     [Min(1f)] public float sessionLengthSeconds = 600f;
 
     [Tooltip("If false, timer stops and decay pauses.")]
@@ -81,10 +75,8 @@ public class PowerDecayManager : MonoBehaviour
         }
     }
 
-
-    /// Effective session length after applying CurveSpeed.
-    /// Higher CurveSpeed => shorter effective session => multiplier ramps up sooner.
-    public float EffectiveSessionLengthSeconds => sessionLengthSeconds / CurveSpeed;
+    // Session length is now fixed (decoupled from CurveSpeed).
+    public float EffectiveSessionLengthSeconds => sessionLengthSeconds;
 
     private void Awake()
     {
@@ -98,20 +90,19 @@ public class PowerDecayManager : MonoBehaviour
         ElapsedSeconds += Time.deltaTime;
     }
 
-
-    /// Difficulty-scaled decay multiplier at the current time.
     public float GetDecayMultiplier()
     {
-        float effLen = Mathf.Max(0.0001f, EffectiveSessionLengthSeconds);
-        float t01 = Mathf.Clamp01(ElapsedSeconds / effLen);
+        float len = Mathf.Max(0.0001f, EffectiveSessionLengthSeconds);
+
+        // Progress through the curve is still difficulty-scaled.
+        // Higher CurveSpeed => we reach late-game multiplier sooner,
+        // but sunrise time stays the same.
+        float t01 = Mathf.Clamp01((ElapsedSeconds / len) * CurveSpeed);
 
         float curve = Mathf.Max(0f, decayMultiplierOverTime.Evaluate(t01));
         return MultiplierScale * curve;
     }
 
-
-    /// Difficulty-scaled curve evaluation at normalized time (0..1).
-    /// Used by "precise countdown" (integrates curve).
     public float EvaluateScaledCurve01(float t01)
     {
         float v = Mathf.Max(0f, decayMultiplierOverTime.Evaluate(Mathf.Clamp01(t01)));
@@ -128,5 +119,42 @@ public class PowerDecayManager : MonoBehaviour
     {
         if (d == null) return;
         _devices.Remove(d);
+    }
+
+    public float GetAverageLampPower01()
+    {
+        if (_devices.Count == 0) return 1f;
+
+        float sum = 0f;
+        int count = 0;
+
+        for (int i = 0; i < _devices.Count; i++)
+        {
+            var d = _devices[i];
+            if (d == null) continue;
+            if (!d.countsTowardBlackout) continue;
+
+            sum += d.NormalizedPower01;
+            count++;
+        }
+
+        return count == 0 ? 1f : Mathf.Clamp01(sum / count);
+    }
+
+    public float GetTimeRemainingToSunrise()
+    {
+        float len = Mathf.Max(0.0001f, EffectiveSessionLengthSeconds);
+        return Mathf.Max(0f, len - ElapsedSeconds);
+    }
+
+    public float GetSessionDurationSeconds()
+    {
+        return EffectiveSessionLengthSeconds;
+    }
+
+    public void ResetTimer(bool runAfterReset = true)
+    {
+        ElapsedSeconds = 0f;
+        isRunning = runAfterReset;
     }
 }
