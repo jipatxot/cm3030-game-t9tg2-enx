@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[RequireComponent(typeof(StreetLampPower))]
+[RequireComponent(typeof(LightPowerDecay))]
 public class LampSafeZone : MonoBehaviour, ISafeZone
 {
     [Header("Safe Zone")]
@@ -12,13 +12,13 @@ public class LampSafeZone : MonoBehaviour, ISafeZone
     public int healthRestoreAmount = 1;
     public float healCooldownSeconds = 2f;
 
-    StreetLampPower lampPower;
+    LightPowerDecay lampPower;
     Transform playerTransform;
     float nextHealTime;
 
     void Awake()
     {
-        lampPower = GetComponent<StreetLampPower>();
+        lampPower = GetComponent<LightPowerDecay>();
     }
 
     void OnEnable()
