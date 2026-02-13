@@ -2730,12 +2730,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerDecayManager
   difficulty: 2
-  easyCurveSpeed: 0.75
+  easyCurveSpeed: 0.5
   normalCurveSpeed: 1
   hardCurveSpeed: 1.4
-  easyMultiplierScale: 0.85
+  easyMultiplierScale: 0.5
   normalMultiplierScale: 1
-  hardMultiplierScale: 1.25
+  hardMultiplierScale: 1.35
   sessionLengthSeconds: 30
   isRunning: 1
   decayMultiplierOverTime:

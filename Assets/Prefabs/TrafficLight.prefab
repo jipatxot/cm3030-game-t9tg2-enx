@@ -755,6 +755,8 @@ MonoBehaviour:
   startFullyPowered: 1
   decayStartDelaySeconds: 0
   graceAfterRepairSeconds: 0.5
+  hardStartPowerPercent: 1
+  hardStartsDimmer: 0
   enableVariation: 1
   seedSource: 0
   variationSeed: 12345

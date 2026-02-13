@@ -20,6 +20,11 @@ public class LightPowerDecay : MonoBehaviour
 
     [Min(0f)] public float decayStartDelaySeconds = 0f;
     [Min(0f)] public float graceAfterRepairSeconds = 0.5f;
+    
+    [Header("Difficulty: Start Brightness")]
+    [Range(0f, 1f)] public float hardStartPowerPercent = 0.8f;
+    public bool hardStartsDimmer = true;
+
 
     [Header("Variation / Stagger (Optional)")]
     [Tooltip("If enabled, each instance gets its own modifiers so they don't all turn off together.")]
@@ -138,19 +143,31 @@ public class LightPowerDecay : MonoBehaviour
 
         float cap = EffectiveMaxPower;
 
+        // Difficulty: on Hard, start at a reduced power percentage (e.g., 80% => 80% brightness).
+        float startCap = cap;
+        var mgr = PowerDecayManager.Instance;
+        if (hardStartsDimmer && mgr != null)
+        {
+            if (mgr.difficulty == PowerDecayManager.Difficulty.Hard)
+                startCap = cap * Mathf.Clamp01(hardStartPowerPercent);
+        }
+
         if (startFullyPowered)
         {
-            CurrentPower = cap;
+            CurrentPower = startCap;
+
+            // Optional: further per-object starting power variation (applied on top of difficulty start).
             if (enableVariation && scaleStartingPower)
             {
                 float sp = LerpRange(startingPowerScaleRange, Next01());
-                CurrentPower = Mathf.Clamp(cap * sp, 0f, cap);
+                CurrentPower = Mathf.Clamp(startCap * sp, 0f, startCap);
             }
         }
         else
         {
             CurrentPower = Mathf.Clamp(CurrentPower, 0f, cap);
         }
+
 
         ApplyBrightness(NormalizedPower01, forceEnableDisable: true);
         PushDebug();
