@@ -1,7 +1,7 @@
 using System.Collections;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -25,20 +25,20 @@ public class GameHudController : MonoBehaviour
     [Range(0f, 1f)] public float redThreshold = 0.30f;
 
     [Header("Optional top-left HP text (leave blank to disable)")]
-    public TMP_Text hpLabelText;          // e.g. "HP"
-    public TMP_Text hpValueText;          // e.g. "87/100" or "87"
+    public TMP_Text hpLabelText;
+    public TMP_Text hpValueText;
     public bool hpShowAsFraction = true;
 
     [Header("Floating damage (optional, no extra script)")]
-    public RectTransform floatingSpawnRoot;          // set to your floating root (RectTransform)
-    public TextMeshProUGUI floatingTextPrefab;       // optional
+    public RectTransform floatingSpawnRoot;
+    public TextMeshProUGUI floatingTextPrefab;
     public float floatingFloatDistance = 40f;
     public float floatingDuration = 1.1f;
     public Vector2 floatingStartOffset = new Vector2(10f, -10f);
 
     [Header("Floating colours")]
-    public Color floatingDamageColor = new Color(0.9f, 0.2f, 0.2f, 1f); // red
-    public Color floatingHealColor = new Color(0.2f, 0.9f, 0.2f, 1f);   // green
+    public Color floatingDamageColor = new Color(0.9f, 0.2f, 0.2f, 1f);
+    public Color floatingHealColor = new Color(0.2f, 0.9f, 0.2f, 1f);
 
     [Header("Sunrise")]
     public TMP_Text timeToSunriseText;
@@ -51,11 +51,10 @@ public class GameHudController : MonoBehaviour
     public Image lightFill;
 
     [Header("Controls overlay")]
-    public TMP_Text moveKeysText;
     public TMP_Text fixKeyText;
 
     bool hasLastHealth;
-    int lastHealthValue;
+    float lastHealthValue;
 
     void Awake()
     {
@@ -66,17 +65,18 @@ public class GameHudController : MonoBehaviour
 
     void OnEnable()
     {
+        ClearFloatingTexts();
         BindHealthEvents();
     }
 
     void OnDisable()
     {
+        ClearFloatingTexts();
         UnbindHealthEvents();
     }
 
     void Update()
     {
-        // Rebind until everything exists (player spawns later)
         if (Time.unscaledTime >= nextRebindTime)
         {
             nextRebindTime = Time.unscaledTime + Mathf.Max(0.05f, rebindInterval);
@@ -98,31 +98,19 @@ public class GameHudController : MonoBehaviour
         if (playerHealth == null)
         {
             var found = PlayerHealth.FindPlayerHealth();
-            if (found != null)
-            {
-                playerHealth = found;
-                changed = true;
-            }
+            if (found != null) { playerHealth = found; changed = true; }
         }
 
         if (powerManager == null)
         {
             var found = PowerDecayManager.Instance;
-            if (found != null)
-            {
-                powerManager = found;
-                changed = true;
-            }
+            if (found != null) { powerManager = found; changed = true; }
         }
 
         if (repairInteraction == null)
         {
             var found = FindFirstObjectByType<PowerRepairInteraction>();
-            if (found != null)
-            {
-                repairInteraction = found;
-                changed = true;
-            }
+            if (found != null) { repairInteraction = found; changed = true; }
         }
 
         return changed;
@@ -132,48 +120,78 @@ public class GameHudController : MonoBehaviour
     {
         if (playerHealth == null) return;
 
-        playerHealth.OnHealthChanged -= OnHealthChanged;
-        playerHealth.OnHealthChanged += OnHealthChanged;
+        ClearFloatingTexts();
 
-        // Reset delta tracking when we (re)bind
+        playerHealth.OnHealthChanged -= OnHealthChanged;
+        playerHealth.OnHealthDelta -= OnHealthDelta;
+
+        playerHealth.OnHealthChanged += OnHealthChanged;
+        playerHealth.OnHealthDelta += OnHealthDelta;
+
         hasLastHealth = false;
 
         OnHealthChanged(playerHealth.currentHealth, playerHealth.maxHealth);
     }
 
+    public void ClearFloatingTexts()
+    {
+        if (floatingSpawnRoot == null) return;
+
+        Transform templateT = (floatingTextPrefab != null) ? floatingTextPrefab.transform : null;
+
+        for (int i = floatingSpawnRoot.childCount - 1; i >= 0; i--)
+        {
+            var child = floatingSpawnRoot.GetChild(i);
+            if (child == null) continue;
+
+            // Do not delete the scene template
+            if (templateT != null && child == templateT) continue;
+
+            Destroy(child.gameObject);
+        }
+
+        // Keep template hidden
+        if (floatingTextPrefab != null && floatingTextPrefab.gameObject.activeSelf)
+            floatingTextPrefab.gameObject.SetActive(false);
+    }
+
+
     void UnbindHealthEvents()
     {
         if (playerHealth == null) return;
+
         playerHealth.OnHealthChanged -= OnHealthChanged;
+        playerHealth.OnHealthDelta -= OnHealthDelta;
+
         hasLastHealth = false;
     }
 
-    void OnHealthChanged(int current, int max)
+    void OnHealthDelta(float delta)
     {
-        // Floating numbers for damage and healing
-        if (hasLastHealth && current != lastHealthValue)
-        {
-            int delta = current - lastHealthValue;
+        if (Mathf.Abs(delta) < 0.0001f) return;
 
-            if (delta < 0)
-            {
-                // damage
-                SpawnFloatingText(delta.ToString(), floatingDamageColor);
-            }
-            else if (delta > 0)
-            {
-                // healing
-                SpawnFloatingText("+" + delta, floatingHealColor);
-            }
+        if (delta < 0f)
+            SpawnFloatingText(FormatNumber(delta), floatingDamageColor);
+        else
+            SpawnFloatingText("+" + FormatNumber(delta), floatingHealColor);
+    }
+
+    void OnHealthChanged(float current, float max)
+    {
+        if (hasLastHealth && Mathf.Abs(current - lastHealthValue) > 0.0001f)
+        {
+            float delta = current - lastHealthValue;
+
+            if (delta < 0f) SpawnFloatingText(FormatNumber(delta), floatingDamageColor);
+            else SpawnFloatingText("+" + FormatNumber(delta), floatingHealColor);
         }
 
         lastHealthValue = current;
         hasLastHealth = true;
 
-        // Health fill
         if (healthFill != null)
         {
-            float t = (max <= 0) ? 0f : Mathf.Clamp01((float)current / max);
+            float t = (max <= 0.0001f) ? 0f : Mathf.Clamp01(current / max);
             healthFill.fillAmount = t;
 
             if (t <= redThreshold) healthFill.color = healthRed;
@@ -181,15 +199,25 @@ public class GameHudController : MonoBehaviour
             else healthFill.color = healthGreen;
         }
 
-        // Optional top-left HP
         if (hpLabelText != null) hpLabelText.text = "HP";
+
         if (hpValueText != null)
         {
-            if (max <= 0) hpValueText.text = current.ToString();
-            else hpValueText.text = hpShowAsFraction ? (current + "/" + max) : current.ToString();
+            if (!hpShowAsFraction || max <= 0.0001f)
+                hpValueText.text = FormatNumber(current);
+            else
+                hpValueText.text = FormatNumber(current) + "/" + FormatNumber(max);
         }
     }
 
+    static string FormatNumber(float v)
+    {
+        float r = Mathf.Round(v);
+        if (Mathf.Abs(v - r) < 0.0005f)
+            return ((int)r).ToString(CultureInfo.InvariantCulture);
+
+        return v.ToString("0.##", CultureInfo.InvariantCulture);
+    }
 
     void SpawnFloatingText(string message, Color color)
     {
@@ -206,16 +234,34 @@ public class GameHudController : MonoBehaviour
 
     TextMeshProUGUI CreateFloatingInstance()
     {
-        RectTransform root = GetFloatingRoot();
+        RectTransform root = floatingSpawnRoot;
         if (root == null) return null;
 
         if (floatingTextPrefab != null)
         {
-            var instance = Instantiate(floatingTextPrefab, root);
-            instance.gameObject.SetActive(true);
+            // If the "prefab" is a scene child, instantiate its GameObject
+            // and then read TMP from the clone. This keeps your scene styling.
+            var templateGO = floatingTextPrefab.gameObject;
+
+            var cloneGO = Instantiate(templateGO, root);
+            cloneGO.name = templateGO.name; // keep clean names
+            cloneGO.SetActive(true);
+
+            var instance = cloneGO.GetComponent<TextMeshProUGUI>();
+            if (instance == null)
+            {
+                Destroy(cloneGO);
+                return null;
+            }
+
+            // Reset only position so animation starts consistently.
+            // Do not touch size/font, you want scene-driven look.
+            instance.rectTransform.anchoredPosition3D = Vector3.zero;
+
             return instance;
         }
 
+        // Fallback if no template is assigned
         var go = new GameObject("FloatingText");
         go.transform.SetParent(root, false);
 
@@ -224,8 +270,8 @@ public class GameHudController : MonoBehaviour
         text.fontSize = 24f;
         text.alignment = TextAlignmentOptions.Left;
 
-        // Try to match style with HUD text
-        var styleSource = timeToSunriseText != null ? timeToSunriseText : (hpValueText != null ? hpValueText : moveKeysText);
+        var styleSource = timeToSunriseText != null ? timeToSunriseText : hpValueText;
+
         if (styleSource != null)
         {
             text.font = styleSource.font;
@@ -233,12 +279,6 @@ public class GameHudController : MonoBehaviour
         }
 
         return text;
-    }
-
-    RectTransform GetFloatingRoot()
-    {
-        if (floatingSpawnRoot != null) return floatingSpawnRoot;
-        return null;
     }
 
     IEnumerator AnimateFloatingText(TextMeshProUGUI text)
@@ -316,9 +356,6 @@ public class GameHudController : MonoBehaviour
 
     void UpdateControlsText()
     {
-        if (moveKeysText != null)
-            moveKeysText.text = "W A S D";
-
         if (fixKeyText != null)
         {
             Key k = Key.F;

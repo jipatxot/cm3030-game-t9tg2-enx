@@ -1,3 +1,4 @@
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -74,20 +75,30 @@ public class HealthUIController : MonoBehaviour
         playerHealth.OnHealthDelta -= HandleHealthDelta;
     }
 
-    void HandleHealthChanged(int current, int max)
+    void HandleHealthChanged(float current, float max)
     {
         if (healthText != null)
-            healthText.text = $"HP: {current}/{max}";
+            healthText.text = "HP: " + FormatNumber(current) + "/" + FormatNumber(max);
     }
 
-    void HandleHealthDelta(int delta)
+    void HandleHealthDelta(float delta)
     {
         if (floatingTextSpawner == null) return;
+        if (Mathf.Abs(delta) < 0.0001f) return;
 
-        if (delta < 0)
-            floatingTextSpawner.SpawnText($"{delta}", damageColor);
-        else if (delta > 0)
-            floatingTextSpawner.SpawnText($"+{delta}", healColor);
+        if (delta < 0f)
+            floatingTextSpawner.SpawnText(FormatNumber(delta), damageColor);
+        else
+            floatingTextSpawner.SpawnText("+" + FormatNumber(delta), healColor);
+    }
+
+    static string FormatNumber(float v)
+    {
+        float r = Mathf.Round(v);
+        if (Mathf.Abs(v - r) < 0.0005f)
+            return ((int)r).ToString(CultureInfo.InvariantCulture);
+
+        return v.ToString("0.##", CultureInfo.InvariantCulture);
     }
 
     void EnsureHudReferences()
