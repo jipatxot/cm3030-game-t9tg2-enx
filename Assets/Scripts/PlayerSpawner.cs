@@ -45,6 +45,11 @@ public class PlayerSpawner : MonoBehaviour
 
     void HandleRoadsGenerated()
     {
+        SpawnNow();
+    }
+
+    public void SpawnNow()
+    {
         if (spawnRoutine != null) StopCoroutine(spawnRoutine);
         spawnRoutine = StartCoroutine(SpawnWhenReady());
     }
