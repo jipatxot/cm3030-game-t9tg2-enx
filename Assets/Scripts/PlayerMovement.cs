@@ -19,6 +19,13 @@ public class PlayerMovement : MonoBehaviour
     public float stepOffset = 0.15f;
     public float slopeLimit = 45f;
 
+    [Header("City limit")]
+    public bool clampToCityLimits = true;
+    [Tooltip("How far from the edge the player is allowed to stand.")]
+    public float cityLimitPadding = 0.4f;
+    public RoadPathGenerator roads;
+    public Renderer groundRenderer;
+
     CharacterController controller;
     Camera mainCamera;
     Vector3 clickTarget;
@@ -30,6 +37,12 @@ public class PlayerMovement : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         mainCamera = Camera.main;
+
+        if (roads == null)
+            roads = FindFirstObjectByType<RoadPathGenerator>();
+
+        if (groundRenderer == null && roads != null)
+            groundRenderer = roads.groundRenderer;
 
         // Reduce unintended climbing
         controller.stepOffset = stepOffset;
@@ -69,6 +82,68 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 velocity = horizontal + Vector3.up * verticalVel;
         controller.Move(velocity * Time.deltaTime);
+
+        if (clampToCityLimits)
+            ClampToCityLimits();
+    }
+
+    void ClampToCityLimits()
+    {
+        if (!TryGetCityLimits(out float minX, out float maxX, out float minZ, out float maxZ))
+            return;
+
+        Vector3 p = transform.position;
+
+        float clampedX = Mathf.Clamp(p.x, minX, maxX);
+        float clampedZ = Mathf.Clamp(p.z, minZ, maxZ);
+
+        if (Mathf.Approximately(clampedX, p.x) && Mathf.Approximately(clampedZ, p.z))
+            return;
+
+        transform.position = new Vector3(clampedX, p.y, clampedZ);
+
+        if (hasClickTarget)
+        {
+            clickTarget.x = Mathf.Clamp(clickTarget.x, minX, maxX);
+            clickTarget.z = Mathf.Clamp(clickTarget.z, minZ, maxZ);
+        }
+    }
+
+    bool TryGetCityLimits(out float minX, out float maxX, out float minZ, out float maxZ)
+    {
+        minX = maxX = minZ = maxZ = 0f;
+
+        if (roads != null && roads.Map != null && roads.Width > 0 && roads.Height > 0)
+        {
+            Vector3 a = roads.GridToWorld(0, 0);
+            Vector3 b = roads.GridToWorld(roads.Width - 1, roads.Height - 1);
+
+            float edge = roads.tileSize * 0.5f;
+            float padding = Mathf.Max(0f, cityLimitPadding);
+
+            minX = Mathf.Min(a.x, b.x) - edge + padding;
+            maxX = Mathf.Max(a.x, b.x) + edge - padding;
+            minZ = Mathf.Min(a.z, b.z) - edge + padding;
+            maxZ = Mathf.Max(a.z, b.z) + edge - padding;
+
+            if (minX <= maxX && minZ <= maxZ)
+                return true;
+        }
+
+        if (groundRenderer != null)
+        {
+            Bounds b = groundRenderer.bounds;
+            float padding = Mathf.Max(0f, cityLimitPadding);
+
+            minX = b.min.x + padding;
+            maxX = b.max.x - padding;
+            minZ = b.min.z + padding;
+            maxZ = b.max.z - padding;
+
+            return minX <= maxX && minZ <= maxZ;
+        }
+
+        return false;
     }
 
     bool IsGrounded()
