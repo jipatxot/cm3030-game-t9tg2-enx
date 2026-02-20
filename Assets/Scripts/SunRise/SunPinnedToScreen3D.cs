@@ -48,13 +48,13 @@ public class SunPinnedToScreen3D : MonoBehaviour
             return;
         }
 
-        // 固定到屏幕位置（Viewport坐标）
+        // Fixed to screen position (Viewport coordinates)
         Vector3 worldPos = targetCamera.ViewportToWorldPoint(
             new Vector3(viewportX, viewportY, distanceFromCamera)
         );
         transform.position = worldPos;
 
-        // 朝向相机（避免Sprite角度不对）
+        // Orient the sprite towards the camera (to avoid incorrect sprite angles).
         if (keepFacingCamera)
         {
             transform.rotation = targetCamera.transform.rotation * Quaternion.Euler(localEulerOffset);
@@ -68,7 +68,7 @@ public class SunPinnedToScreen3D : MonoBehaviour
 
     private void TryFindCamera()
     {
-        // 1) 优先 MainCamera
+        // 1) Priority MainCamera
         targetCamera = Camera.main;
         if (targetCamera != null)
         {
@@ -76,7 +76,7 @@ public class SunPinnedToScreen3D : MonoBehaviour
             return;
         }
 
-        // 2) 退化：找任意启用中的相机
+        // 2) Degradation: Find any camera that is currently in use.
 #if UNITY_2023_1_OR_NEWER
         var cams = Object.FindObjectsByType<Camera>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
 #else
