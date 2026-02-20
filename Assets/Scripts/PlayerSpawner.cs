@@ -45,6 +45,11 @@ public class PlayerSpawner : MonoBehaviour
 
     void HandleRoadsGenerated()
     {
+        SpawnNow();
+    }
+
+    public void SpawnNow()
+    {
         if (spawnRoutine != null) StopCoroutine(spawnRoutine);
         spawnRoutine = StartCoroutine(SpawnWhenReady());
     }
@@ -72,6 +77,7 @@ public class PlayerSpawner : MonoBehaviour
             existing.tag = "Player";
 
             EnsurePlayerHealth(existing);
+            EnsurePlayerRuntimeSetup(existing);
             RegisterToUI(existing);
 
             if (!respawnOnRegenerate)
@@ -94,6 +100,7 @@ public class PlayerSpawner : MonoBehaviour
 
         player.tag = "Player";
         EnsurePlayerHealth(player);
+        EnsurePlayerRuntimeSetup(player);
         RegisterToUI(player);
     }
 
@@ -116,6 +123,15 @@ public class PlayerSpawner : MonoBehaviour
         var ph = player.GetComponent<PlayerHealth>();
         if (ph == null) ph = player.GetComponentInChildren<PlayerHealth>(true);
         if (ph == null) player.AddComponent<PlayerHealth>();
+    }
+
+    void EnsurePlayerRuntimeSetup(GameObject player)
+    {
+        if (player == null) return;
+
+        var setup = player.GetComponent<PlayerRuntimeSetup>();
+        if (setup == null) setup = player.AddComponent<PlayerRuntimeSetup>();
+        setup.ConfigureNow();
     }
 
     Transform GetSafeRoot(GameObject existingPlayer)

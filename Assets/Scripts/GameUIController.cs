@@ -536,6 +536,8 @@ public class GameUIController : MonoBehaviour
 
     void ShowStartScreen()
     {
+        SetPlayerVisualsVisible(false);
+
         if (startPanel != null) startPanel.SetActive(true);
         if (pausePanel != null) pausePanel.SetActive(false);
         if (gamePlayPanel != null) gamePlayPanel.SetActive(false);
@@ -561,6 +563,8 @@ public class GameUIController : MonoBehaviour
 
     void ShowGameplayHUD()
     {
+        SetPlayerVisualsVisible(true);
+
         if (startPanel != null) startPanel.SetActive(false);
         if (pausePanel != null) pausePanel.SetActive(false);
         if (gamePlayPanel != null) gamePlayPanel.SetActive(true);
@@ -610,6 +614,11 @@ public class GameUIController : MonoBehaviour
         playerHealth = null;
 
         roads.GenerateAndSpawn();
+
+        var playerSpawner = FindFirstObjectByType<PlayerSpawner>();
+        if (playerSpawner != null)
+            playerSpawner.SpawnNow();
+
         CacheAgentsOnce();
 
         if (powerManager == null) powerManager = PowerDecayManager.Instance;
@@ -619,6 +628,22 @@ public class GameUIController : MonoBehaviour
 
         if (applyDifficultyRoutine != null) StopCoroutine(applyDifficultyRoutine);
         applyDifficultyRoutine = StartCoroutine(ApplyDifficultyAfterSpawn());
+    }
+
+    void SetPlayerVisualsVisible(bool visible)
+    {
+        var players = FindAllIncludingInactive<PlayerHealth>();
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i] == null) continue;
+
+            var renderers = players[i].GetComponentsInChildren<Renderer>(true);
+            for (int r = 0; r < renderers.Length; r++)
+            {
+                if (renderers[r] == null) continue;
+                renderers[r].enabled = visible;
+            }
+        }
     }
 
     void OnQuitClicked()
