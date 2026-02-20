@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
+
 /// Sunrise / "morning has come" finale effect:
 /// - Fades in a warm full-screen overlay (atmosphere / glow)
 /// - Optionally ramps up a scene Light intensity + color
@@ -13,7 +13,6 @@ using UnityEngine.UI;
 /// Restart / main menu:
 /// Call StopAndReset() before restarting, OR enable autoResetOnDisable so the effect cleans itself up
 /// when the win panel gets hidden / destroyed.
-/// </summary>
 public class SunriseFinaleEffect : MonoBehaviour
 {
     [Header("Play")]
