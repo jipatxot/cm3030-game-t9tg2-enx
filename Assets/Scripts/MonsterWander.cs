@@ -4,18 +4,22 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class MonsterWander : MonoBehaviour
 {
+    [Header("Wander")]
     public float minWait = 0.4f;
     public float maxWait = 1.6f;
-
     public float minWanderRadius = 6f;
     public float maxWanderRadius = 18f;
 
     [Header("Chase Player")]
-    public float chaseRange = 6f;
-    public float loseRange = 9f;
-    public float chaseRepathSeconds = 0.25f;
+    public float chaseRange = 8f;
+    public float loseRange = 12f;
+    public float chaseRepathSeconds = 0.2f;
     public bool stopChasingInSafeZone = true;
-    public float playerSeparationDistance = 1.2f;
+
+    [Header("Prediction")]
+    public bool usePrediction = true;
+    public float predictTime = 0.35f;
+    public float maxPredictDistance = 2f;
 
     [Header("Avoid Lit area")]
     public string litAreaName = "Lit";
@@ -24,16 +28,19 @@ public class MonsterWander : MonoBehaviour
 
     NavMeshAgent agent;
     int darkAreaMask;
+
     float nextTime;
     float nextChaseTime;
+    float nextReacquireTime;
+
     bool isChasing;
+
     Transform playerTransform;
-    MonsterDamage monsterDamage;
+    CharacterController playerCC;
 
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        monsterDamage = GetComponent<MonsterDamage>();
 
         int lit = NavMesh.GetAreaFromName(litAreaName);
         int litMask = (lit < 0) ? 0 : (1 << lit);
@@ -44,8 +51,10 @@ public class MonsterWander : MonoBehaviour
 
     void Update()
     {
-        if (agent == null || !agent.enabled) return;
-        if (!agent.isOnNavMesh) return; // <- key line
+        if (!agent || !agent.enabled || !agent.isOnNavMesh)
+            return;
+
+        ReacquirePlayer();
 
         if (SafeZoneRegistry.IsPositionSafe(transform.position))
         {
@@ -55,7 +64,7 @@ public class MonsterWander : MonoBehaviour
 
         if (TryGetPlayer(out Vector3 playerPos) && ShouldChasePlayer(playerPos))
         {
-            ChasePlayer(playerPos);
+            SmartChase(playerPos);
             return;
         }
 
@@ -68,8 +77,22 @@ public class MonsterWander : MonoBehaviour
         if (Time.time < nextTime) return;
 
         if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-        {
             PickNewDestination();
+    }
+
+    void ReacquirePlayer()
+    {
+        if (Time.time < nextReacquireTime) return;
+        nextReacquireTime = Time.time + 0.5f;
+
+        if (playerTransform == null)
+        {
+            var player = GameObject.FindGameObjectWithTag("Player");
+            if (player)
+            {
+                playerTransform = player.transform;
+                playerCC = player.GetComponent<CharacterController>();
+            }
         }
     }
 
@@ -96,12 +119,6 @@ public class MonsterWander : MonoBehaviour
 
     bool TryGetPlayer(out Vector3 position)
     {
-        if (playerTransform == null)
-        {
-            var player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null) playerTransform = player.transform;
-        }
-
         if (playerTransform != null)
         {
             position = playerTransform.position;
@@ -114,7 +131,8 @@ public class MonsterWander : MonoBehaviour
 
     bool ShouldChasePlayer(Vector3 playerPos)
     {
-        if (stopChasingInSafeZone && SafeZoneRegistry.IsPositionSafe(playerPos)) return false;
+        if (stopChasingInSafeZone && SafeZoneRegistry.IsPositionSafe(playerPos))
+            return false;
 
         float dist = Vector3.Distance(transform.position, playerPos);
 
@@ -124,35 +142,48 @@ public class MonsterWander : MonoBehaviour
         return dist <= chaseRange;
     }
 
-    void ChasePlayer(Vector3 playerPos)
+    void SmartChase(Vector3 playerPos)
     {
         if (!isChasing) isChasing = true;
 
         if (Time.time < nextChaseTime) return;
 
-        float playerR = 0.35f;
-        if (playerTransform != null)
-        {
-            var cc = playerTransform.GetComponent<CharacterController>();
-            if (cc != null) playerR = cc.radius;
-        }
+        float playerRadius = 0.35f;
+        if (playerCC != null)
+            playerRadius = playerCC.radius;
 
-        float stopDistance = Mathf.Max(0.05f, agent.radius + playerR);
+        float stopDistance = Mathf.Max(0.05f, agent.radius + playerRadius);
         agent.stoppingDistance = stopDistance;
 
+        Vector3 target = playerPos;
 
-        Vector3 toPlayer = playerPos - transform.position;
-        toPlayer.y = 0f;
+        if (usePrediction && playerCC != null)
+        {
+            Vector3 vel = playerCC.velocity;
+            vel.y = 0f;
 
-        if (toPlayer.sqrMagnitude <= stopDistance * stopDistance)
+            Vector3 predicted = playerPos + vel * predictTime;
+
+            Vector3 delta = predicted - playerPos;
+            if (delta.magnitude > maxPredictDistance)
+                predicted = playerPos + delta.normalized * maxPredictDistance;
+
+            target = predicted;
+        }
+
+        Vector3 toTarget = target - transform.position;
+        toTarget.y = 0f;
+
+        if (toTarget.sqrMagnitude <= stopDistance * stopDistance)
         {
             agent.ResetPath();
-            nextChaseTime = Time.time + Mathf.Max(0.05f, chaseRepathSeconds);
+            nextChaseTime = Time.time + chaseRepathSeconds;
             return;
         }
 
-        Vector3 destination = playerPos - toPlayer.normalized * stopDistance;
+        Vector3 destination = target - toTarget.normalized * stopDistance;
         agent.SetDestination(destination);
-        nextChaseTime = Time.time + Mathf.Max(0.05f, chaseRepathSeconds);
+
+        nextChaseTime = Time.time + chaseRepathSeconds;
     }
 }
