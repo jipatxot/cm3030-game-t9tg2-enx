@@ -66,6 +66,8 @@
     <Compile Include="Assets\Scripts\LightDecay\PowerDecayManager.cs" />
     <Compile Include="Assets\Scripts\PlayerHealth.cs" />
     <Compile Include="Assets\Scripts\CityNavMeshBaker.cs" />
+    <Compile Include="Assets\Scripts\PlayerAnimationDriver.cs" />
+    <Compile Include="Assets\Scripts\PlayerRuntimeSetup.cs" />
     <Compile Include="Assets\Scripts\LightDecay\BuildingSafeZone.cs" />
     <Compile Include="Assets\Scripts\GameUIController.cs" />
     <Compile Include="Assets\Scripts\SunRise\SunriseAndLightCleanup.cs" />
