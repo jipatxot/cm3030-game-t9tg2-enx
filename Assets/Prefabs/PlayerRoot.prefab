@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 9004951150186950726}
   - component: {fileID: 3480789793159004991}
   - component: {fileID: 5427502072854885389}
+  - component: {fileID: 8244502231226721408}
   m_Layer: 0
   m_Name: PlayerRoot
   m_TagString: Player
@@ -83,6 +84,10 @@ MonoBehaviour:
   groundCheckDistance: 0.35
   stepOffset: 0.15
   slopeLimit: 45
+  clampToCityLimits: 1
+  cityLimitPadding: 0.4
+  roads: {fileID: 0}
+  groundRenderer: {fileID: 0}
 --- !u!114 &5427502072854885389
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -97,6 +102,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   maxHealth: 10
   currentHealth: 10
+--- !u!114 &8244502231226721408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 845372608396723584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4771819585f1a0649ab767bb8c26d749, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationDriver
+  animator: {fileID: 0}
+  controller: {fileID: 0}
+  dampTime: 0.1
 --- !u!1001 &5301210094012817605
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -127,7 +147,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4111819248598986, guid: f11fc98cf1e8d5547a9b2ec85cc9c664, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4111819248598986, guid: f11fc98cf1e8d5547a9b2ec85cc9c664, type: 3}
       propertyPath: m_LocalPosition.z
@@ -161,6 +181,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 95389170962898660, guid: f11fc98cf1e8d5547a9b2ec85cc9c664, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: f5563a0ddcf09264784071a8881b98dc, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -536,7 +536,7 @@ public class GameUIController : MonoBehaviour
 
     void ShowStartScreen()
     {
-        SetPlayersVisible(false);
+        SetPlayerVisualsVisible(false);
 
         if (startPanel != null) startPanel.SetActive(true);
         if (pausePanel != null) pausePanel.SetActive(false);
@@ -563,7 +563,7 @@ public class GameUIController : MonoBehaviour
 
     void ShowGameplayHUD()
     {
-        SetPlayersVisible(true);
+        SetPlayerVisualsVisible(true);
 
         if (startPanel != null) startPanel.SetActive(false);
         if (pausePanel != null) pausePanel.SetActive(false);
@@ -630,13 +630,19 @@ public class GameUIController : MonoBehaviour
         applyDifficultyRoutine = StartCoroutine(ApplyDifficultyAfterSpawn());
     }
 
-    void SetPlayersVisible(bool visible)
+    void SetPlayerVisualsVisible(bool visible)
     {
-        var players = FindAllIncludingInactive<PlayerMovement>();
+        var players = FindAllIncludingInactive<PlayerHealth>();
         for (int i = 0; i < players.Count; i++)
         {
             if (players[i] == null) continue;
-            players[i].gameObject.SetActive(visible);
+
+            var renderers = players[i].GetComponentsInChildren<Renderer>(true);
+            for (int r = 0; r < renderers.Length; r++)
+            {
+                if (renderers[r] == null) continue;
+                renderers[r].enabled = visible;
+            }
         }
     }
 
