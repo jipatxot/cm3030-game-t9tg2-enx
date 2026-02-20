@@ -10137,7 +10137,7 @@ MonoBehaviour:
   ignoreTimeScale: 1
   autoResetOnDisable: 1
   destroyOverlayOnReset: 1
-  fadeInSeconds: 10
+  fadeInSeconds: 3
   holdSeconds: 0
   fadeOutSeconds: 0
   enableOverlay: 1
