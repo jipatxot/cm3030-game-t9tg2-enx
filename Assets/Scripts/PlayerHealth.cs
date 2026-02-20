@@ -3,47 +3,50 @@ using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour
 {
-    public int maxHealth = 10;
-    public int currentHealth = 10;
+    public float maxHealth = 10f;
+    public float currentHealth = 10f;
 
-    public event Action<int, int> OnHealthChanged;
-    public event Action<int> OnHealthDelta;
+    public event Action<float, float> OnHealthChanged;
+    public event Action<float> OnHealthDelta;
     public event Action OnPlayerDied;
 
     void Awake()
     {
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
     }
 
     void Start()
     {
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
-    public void ApplyDamage(int amount)
+    public void ApplyDamage(float amount)
     {
-        if (amount <= 0) return;
-        if (currentHealth <= 0) return;
+        if (amount <= 0f) return;
+        if (currentHealth <= 0f) return;
 
-        currentHealth = Mathf.Max(0, currentHealth - amount);
+        float before = currentHealth;
+        currentHealth = Mathf.Max(0f, currentHealth - amount);
+        float delta = currentHealth - before; // negative
+
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
-        OnHealthDelta?.Invoke(-amount);
+        OnHealthDelta?.Invoke(delta);
 
-        if (currentHealth <= 0)
+        if (currentHealth <= 0f)
             OnPlayerDied?.Invoke();
     }
 
-    public void RestoreHealth(int amount)
+    public void RestoreHealth(float amount)
     {
-        if (amount <= 0) return;
-        if (currentHealth <= 0) return;
+        if (amount <= 0f) return;
+        if (currentHealth <= 0f) return;
 
-        int before = currentHealth;
+        float before = currentHealth;
         currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
-        int delta = currentHealth - before;
+        float delta = currentHealth - before; // positive
 
-        if (delta <= 0) return;
+        if (delta <= 0f) return;
 
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
         OnHealthDelta?.Invoke(delta);
@@ -53,8 +56,22 @@ public class PlayerHealth : MonoBehaviour
     {
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
-            return player.GetComponent<PlayerHealth>();
+        {
+            var ph = player.GetComponent<PlayerHealth>();
+            if (ph != null) return ph;
 
-        return FindFirstObjectByType<PlayerHealth>();
+            ph = player.GetComponentInChildren<PlayerHealth>(true);
+            if (ph != null) return ph;
+        }
+
+#if UNITY_2023_1_OR_NEWER
+        var all = FindObjectsByType<PlayerHealth>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        if (all != null && all.Length > 0) return all[0];
+#else
+        var all = FindObjectsOfType<PlayerHealth>(true);
+        if (all != null && all.Length > 0) return all[0];
+#endif
+
+        return null;
     }
 }

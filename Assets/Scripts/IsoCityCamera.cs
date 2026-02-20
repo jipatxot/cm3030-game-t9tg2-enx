@@ -26,8 +26,25 @@ public class IsoCityCamera : MonoBehaviour
     public bool clampToGround = true;
     public float clampPadding = 2f;
 
-    [Header("Focus offset")]
+    [Header("Focus offset (general)")]
     public Vector3 focusOffset = Vector3.zero;
+
+    [Header("Follow Player")]
+    public bool snapToPlayerOnMoveInput = true;
+    public string playerTag = "Player";
+    public float followSmooth = 18f;
+
+    [Header("Player centering when snapped")]
+    [Tooltip("X moves along camera right, Y moves along camera forward (planar). Default Y = -5.")]
+    public Vector2 snapCenterOffset = new Vector2(0f, -5f);
+
+    [Header("Mouse Orbit")]
+    public bool orbitWithRightMouse = true;
+    public float orbitSensitivity = 0.12f;
+    public float minPitch = 25f;
+    public float maxPitch = 70f;
+
+    Transform player;
 
     void Reset()
     {
@@ -39,17 +56,35 @@ public class IsoCityCamera : MonoBehaviour
         if (cam == null) cam = GetComponentInChildren<Camera>();
         if (cam != null) cam.orthographic = true;
 
+        EnsureFocusExists();
         ApplyRotation();
+        SyncToFocus();
     }
 
     void Update()
     {
         if (cam == null) return;
 
+        EnsureFocusExists();
+        EnsurePlayer();
+
+        bool orbiting = IsOrbiting();
+
+        if (orbitWithRightMouse)
+            MouseOrbit();
+
         ApplyRotation();
 
-        if (edgePanEnabled)
+        bool hasMoveInput = HasPlayerMoveInput();
+
+        // Free camera when player not moving
+        // Stop edge pan while orbiting to avoid weird combined motion
+        if (edgePanEnabled && !orbiting)
             EdgePan();
+
+        // Snap back onto player when moving
+        if (hasMoveInput && player != null)
+            FollowPlayerOnMoveInput();
 
         ScrollZoom();
 
@@ -57,14 +92,58 @@ public class IsoCityCamera : MonoBehaviour
             ClampToGroundBounds();
     }
 
+    bool IsOrbiting()
+    {
+        var mouse = Mouse.current;
+        return mouse != null && mouse.rightButton.isPressed;
+    }
+
+    void EnsureFocusExists()
+    {
+        if (focus != null) return;
+
+        var go = new GameObject("CameraFocus");
+        go.transform.SetParent(null);
+        go.transform.position = transform.position;
+        focus = go.transform;
+    }
+
+    void EnsurePlayer()
+    {
+        if (player != null) return;
+
+        var p = GameObject.FindGameObjectWithTag(playerTag);
+        if (p != null) player = p.transform;
+    }
+
+    bool HasPlayerMoveInput()
+    {
+        var kb = Keyboard.current;
+        if (kb == null) return false;
+
+        return kb.wKey.isPressed || kb.aKey.isPressed || kb.sKey.isPressed || kb.dKey.isPressed
+            || kb.upArrowKey.isPressed || kb.leftArrowKey.isPressed || kb.downArrowKey.isPressed || kb.rightArrowKey.isPressed;
+    }
+
     void ApplyRotation()
     {
         transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
     }
 
+    void MouseOrbit()
+    {
+        var mouse = Mouse.current;
+        if (mouse == null) return;
+        if (!mouse.rightButton.isPressed) return;
+
+        Vector2 d = mouse.delta.ReadValue();
+        yaw += d.x * orbitSensitivity;
+        pitch -= d.y * orbitSensitivity;
+        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+    }
+
     void EdgePan()
     {
-        // Mouse position in screen pixels
         Vector2 mp = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
 
         float dx = 0f;
@@ -78,7 +157,6 @@ public class IsoCityCamera : MonoBehaviour
 
         if (dx == 0f && dz == 0f) return;
 
-        // Move in camera-planar directions (ignore vertical)
         Vector3 right = transform.right; right.y = 0f; right.Normalize();
         Vector3 forward = transform.forward; forward.y = 0f; forward.Normalize();
 
@@ -92,13 +170,29 @@ public class IsoCityCamera : MonoBehaviour
         SyncToFocus();
     }
 
+    void FollowPlayerOnMoveInput()
+    {
+        if (focus == null || player == null) return;
+
+        Vector3 right = transform.right; right.y = 0f; right.Normalize();
+        Vector3 forward = transform.forward; forward.y = 0f; forward.Normalize();
+
+        Vector3 centerOffsetWorld = right * snapCenterOffset.x + forward * snapCenterOffset.y;
+        Vector3 target = player.position + centerOffsetWorld;
+
+        if (snapToPlayerOnMoveInput)
+            focus.position = target;
+        else
+            focus.position = Vector3.Lerp(focus.position, target, followSmooth * Time.deltaTime);
+
+        SyncToFocus();
+    }
+
     void ScrollZoom()
     {
         if (Mouse.current == null) return;
 
-        // New Input System scroll is a Vector2, y is wheel direction
         float scrollY = Mouse.current.scroll.ReadValue().y;
-
         if (Mathf.Abs(scrollY) < 0.01f) return;
 
         float target = cam.orthographicSize - scrollY * (zoomSpeed * 0.01f);
@@ -109,7 +203,6 @@ public class IsoCityCamera : MonoBehaviour
     {
         if (focus == null) return;
 
-        // Place rig at focus + offset, keeping existing height
         Vector3 p = transform.position;
         Vector3 f = focus.position + focusOffset;
         transform.position = new Vector3(f.x, p.y, f.z);

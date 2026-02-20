@@ -31,12 +31,24 @@ public class PlayerSpawner : MonoBehaviour
         if (spawnRoutine != null) StopCoroutine(spawnRoutine);
     }
 
+    void Awake()
+    {
+        if (roads == null)
+            roads = FindFirstObjectByType<RoadPathGenerator>();
+
+    }
+
     void Start()
     {
         spawnRoutine = StartCoroutine(SpawnWhenReady());
     }
 
     void HandleRoadsGenerated()
+    {
+        SpawnNow();
+    }
+
+    public void SpawnNow()
     {
         if (spawnRoutine != null) StopCoroutine(spawnRoutine);
         spawnRoutine = StartCoroutine(SpawnWhenReady());
@@ -56,22 +68,97 @@ public class PlayerSpawner : MonoBehaviour
     void SpawnOrMovePlayer()
     {
         Vector3 center = GetCityCenter();
+        var existing = FindExistingPlayer();
 
-        var existing = GameObject.FindGameObjectWithTag("Player");
-        if (existing != null && !respawnOnRegenerate)
+        if (existing != null)
         {
             existing.transform.position = center;
-            return;
+            existing.SetActive(true);
+            existing.tag = "Player";
+
+            EnsurePlayerHealth(existing);
+            RegisterToUI(existing);
+
+            if (!respawnOnRegenerate)
+                return;
+
+            // If this existing player is the configured playerRoot object, reuse it.
+            // This supports workflows where users place their character model under playerRoot.
+            if (playerRoot != null && existing == playerRoot.gameObject)
+                return;
+
+            Destroy(existing);
         }
 
-        if (existing != null && respawnOnRegenerate)
-            Destroy(existing);
+        // If the inspector root is inactive, parenting will hide the player.
+        Transform safeRoot = GetSafeRoot(existing);
 
         var player = playerPrefab != null
-            ? Instantiate(playerPrefab, center, Quaternion.identity, playerRoot)
-            : BuildSimplePlayer(center);
+            ? Instantiate(playerPrefab, center, Quaternion.identity, safeRoot)
+            : BuildSimplePlayer(center, safeRoot);
 
         player.tag = "Player";
+        EnsurePlayerHealth(player);
+        RegisterToUI(player);
+    }
+
+
+    GameObject FindExistingPlayer()
+    {
+        var tagged = GameObject.FindGameObjectWithTag("Player");
+        if (tagged != null) return tagged;
+
+        if (playerRoot != null && LooksLikePlayerObject(playerRoot.gameObject))
+            return playerRoot.gameObject;
+
+        return null;
+    }
+
+    void EnsurePlayerHealth(GameObject player)
+    {
+        if (player == null) return;
+
+        var ph = player.GetComponent<PlayerHealth>();
+        if (ph == null) ph = player.GetComponentInChildren<PlayerHealth>(true);
+        if (ph == null) player.AddComponent<PlayerHealth>();
+    }
+
+    Transform GetSafeRoot(GameObject existingPlayer)
+    {
+        if (playerRoot == null)
+            return null; // no parent
+
+        if (existingPlayer != null && (playerRoot == existingPlayer.transform || playerRoot.IsChildOf(existingPlayer.transform)))
+            return null;
+
+        if (!playerRoot.gameObject.activeInHierarchy)
+        {
+            Debug.LogWarning("PlayerSpawner: playerRoot is inactive in hierarchy. Spawning player without parent so it stays visible.");
+            return null;
+        }
+
+        return playerRoot;
+    }
+
+    bool LooksLikePlayerObject(GameObject go)
+    {
+        if (go == null) return false;
+        if (go.CompareTag("Player")) return true;
+        if (go.GetComponent<PlayerMovement>() != null) return true;
+        if (go.GetComponent<PlayerHealth>() != null) return true;
+        if (go.GetComponent<CharacterController>() != null) return true;
+        return false;
+    }
+
+    void RegisterToUI(GameObject player)
+    {
+        var ui = FindFirstObjectByType<GameUIController>();
+        if (ui == null) return;
+
+        var ph = player.GetComponent<PlayerHealth>();
+        if (ph == null) ph = player.GetComponentInChildren<PlayerHealth>(true);
+
+        ui.RegisterPlayer(ph);
     }
 
     Vector3 GetCityCenter()
@@ -91,12 +178,13 @@ public class PlayerSpawner : MonoBehaviour
         return basePos;
     }
 
-    GameObject BuildSimplePlayer(Vector3 position)
+    GameObject BuildSimplePlayer(Vector3 position, Transform parent)
     {
-        if (playerRoot == null) playerRoot = transform;
-
         var root = new GameObject("Player");
-        root.transform.SetParent(playerRoot, false);
+
+        if (parent != null)
+            root.transform.SetParent(parent, false);
+
         root.transform.position = position;
 
         var controller = root.AddComponent<CharacterController>();

@@ -130,11 +130,16 @@ public class MonsterWander : MonoBehaviour
 
         if (Time.time < nextChaseTime) return;
 
-        float stopDistance = Mathf.Max(agent.stoppingDistance, playerSeparationDistance);
-        if (monsterDamage != null)
-            stopDistance = Mathf.Max(stopDistance, monsterDamage.attackRange * 0.9f);
+        float playerR = 0.35f;
+        if (playerTransform != null)
+        {
+            var cc = playerTransform.GetComponent<CharacterController>();
+            if (cc != null) playerR = cc.radius;
+        }
 
+        float stopDistance = Mathf.Max(0.05f, agent.radius + playerR);
         agent.stoppingDistance = stopDistance;
+
 
         Vector3 toPlayer = playerPos - transform.position;
         toPlayer.y = 0f;

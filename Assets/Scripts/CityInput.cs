@@ -3,7 +3,8 @@ using UnityEngine.InputSystem;
 
 public class CityInput : MonoBehaviour
 {
-    public RoadPathGenerator roads;
+    public GameUIController ui;          // drag in inspector (optional)
+    public RoadPathGenerator roads;      // keep if you want, optional
 
     private PlayerControls controls;
 
@@ -11,27 +12,42 @@ public class CityInput : MonoBehaviour
     {
         controls = new PlayerControls();
 
+        if (ui == null)
+            ui = FindFirstObjectByType<GameUIController>();
+
         if (roads == null)
             roads = FindFirstObjectByType<RoadPathGenerator>();
     }
 
     void OnEnable()
     {
+        if (controls == null) controls = new PlayerControls();
+
         controls.Enable();
         controls.Gameplay.Regenerate.performed += OnRegenerate;
     }
 
     void OnDisable()
     {
+        if (controls == null) return;
+
         controls.Gameplay.Regenerate.performed -= OnRegenerate;
         controls.Disable();
     }
 
     private void OnRegenerate(InputAction.CallbackContext ctx)
     {
+        // Preferred: go through UI controller so timer resets, difficulty reapplies, etc.
+        if (ui != null)
+        {
+            ui.HotkeyRestartRun();
+            return;
+        }
+
+        // Fallback: at least regenerate the map
         if (roads != null)
             roads.GenerateAndSpawn();
         else
-            UnityEngine.Debug.LogWarning("CityInput: roads reference not set.");
+            Debug.LogWarning("CityInput: roads reference not set.");
     }
 }

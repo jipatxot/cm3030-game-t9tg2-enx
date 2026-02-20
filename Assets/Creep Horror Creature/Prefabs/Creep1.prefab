@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1039528551830210852}
   - component: {fileID: 1832134202571897039}
   - component: {fileID: 4288747415680719312}
+  - component: {fileID: 6373898640581361647}
   m_Layer: 0
   m_Name: Creep1
   m_TagString: Untagged
@@ -98,6 +99,11 @@ MonoBehaviour:
   maxWait: 1.6
   minWanderRadius: 6
   maxWanderRadius: 18
+  chaseRange: 6
+  loseRange: 9
+  chaseRepathSeconds: 0.25
+  stopChasingInSafeZone: 1
+  playerSeparationDistance: 1.2
   litAreaName: Lit
   sampleRadius: 2
   attempts: 25
@@ -115,6 +121,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   speedMultiplier: 1
   damp: 0.12
+--- !u!114 &6373898640581361647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2547632407910942000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2455f59d9674b5d4abf86c55305b0035, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterDamage
+  damagePerTick: 1
+  damageInterval: 1
+  attackRange: 1.4
 --- !u!1001 &2547632406756309541
 PrefabInstance:
   m_ObjectHideFlags: 0
