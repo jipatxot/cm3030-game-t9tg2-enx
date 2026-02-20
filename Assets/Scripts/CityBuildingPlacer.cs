@@ -272,8 +272,6 @@ public class CityBuildingPlacer : MonoBehaviour
         if (zone == null) zone = go.AddComponent<BuildingSafeZone>();
 
         zone.safeRadius = radius;
-        zone.restoreRadius = radius;
-        zone.healthRestoreAmount = 2;
     }
 
     void SetLayerRecursively(Transform t, int layer)

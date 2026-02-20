@@ -183,8 +183,8 @@ public class StreetFurnitureGenerator : MonoBehaviour
         if (zone == null) zone = lamp.AddComponent<LampSafeZone>();
 
         zone.safeRadius = Mathf.Max(0.5f, lampLitRadius);
-        zone.restoreRadius = Mathf.Max(0.5f, lampLitRadius);
     }
+
 
     void EnsureTrafficLightLitVolume(GameObject trafficLight)
     {
