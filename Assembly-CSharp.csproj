@@ -61,19 +61,26 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.2.10f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\SunRise\SunPinnedToScreen3D.cs" />
     <Compile Include="Assets\Scripts\IsoCityCamera.cs" />
     <Compile Include="Assets\Scripts\LightDecay\PowerDecayManager.cs" />
     <Compile Include="Assets\Scripts\PlayerHealth.cs" />
     <Compile Include="Assets\Scripts\CityNavMeshBaker.cs" />
+    <Compile Include="Assets\Scripts\PlayerAnimationDriver.cs" />
+    <Compile Include="Assets\Scripts\PlayerRuntimeSetup.cs" />
     <Compile Include="Assets\Scripts\LightDecay\BuildingSafeZone.cs" />
     <Compile Include="Assets\Scripts\GameUIController.cs" />
+    <Compile Include="Assets\Scripts\SunRise\SunriseAndLightCleanup.cs" />
     <Compile Include="Assets\Scripts\MonsterWalkSpeedSync.cs" />
     <Compile Include="Assets\Scripts\LightDecay\BlackoutCountdownPreciseUI.cs" />
     <Compile Include="Assets\Scripts\LightDecay\SafeZoneRegistry.cs" />
     <Compile Include="Assets\Scripts\MonsterDamage.cs" />
+    <Compile Include="Assets\Scripts\GameHudController.cs" />
     <Compile Include="Assets\Scripts\MonsterSpawner.cs" />
     <Compile Include="Assets\Scripts\ProceduralBuildingVisual.cs" />
+    <Compile Include="Assets\Scripts\SunRise\NightEndSunriseTrigger.cs" />
     <Compile Include="Assets\Scripts\LightDecay\PowerRepairInteraction.cs" />
+    <Compile Include="Assets\Scripts\SunRise\SunriseFinaleEffect.cs" />
     <Compile Include="Assets\Scripts\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\LightDecay\LightPowerDecay.cs" />
     <Compile Include="Assets\Scripts\RoadPathGenerator.cs" />

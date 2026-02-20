@@ -35,6 +35,7 @@ public class PlayerSpawner : MonoBehaviour
     {
         if (roads == null)
             roads = FindFirstObjectByType<RoadPathGenerator>();
+
     }
 
     void Start()
@@ -43,6 +44,11 @@ public class PlayerSpawner : MonoBehaviour
     }
 
     void HandleRoadsGenerated()
+    {
+        SpawnNow();
+    }
+
+    public void SpawnNow()
     {
         if (spawnRoutine != null) StopCoroutine(spawnRoutine);
         spawnRoutine = StartCoroutine(SpawnWhenReady());
@@ -62,40 +68,79 @@ public class PlayerSpawner : MonoBehaviour
     void SpawnOrMovePlayer()
     {
         Vector3 center = GetCityCenter();
+        var existing = FindExistingPlayer();
 
-        // If the inspector root is inactive, parenting will hide the player
-        Transform safeRoot = GetSafeRoot();
-
-        var existing = GameObject.FindGameObjectWithTag("Player");
-        if (existing != null && !respawnOnRegenerate)
+        if (existing != null)
         {
             existing.transform.position = center;
+            existing.SetActive(true);
+            existing.tag = "Player";
+
+            EnsurePlayerHealth(existing);
+            EnsurePlayerRuntimeSetup(existing);
             RegisterToUI(existing);
-            return;
+
+            if (!respawnOnRegenerate)
+                return;
+
+            // If this existing player is the configured playerRoot object, reuse it.
+            // This supports workflows where users place their character model under playerRoot.
+            if (playerRoot != null && existing == playerRoot.gameObject)
+                return;
+
+            Destroy(existing);
         }
 
-        if (existing != null && respawnOnRegenerate)
-            Destroy(existing);
+        // If the inspector root is inactive, parenting will hide the player.
+        Transform safeRoot = GetSafeRoot(existing);
 
         var player = playerPrefab != null
             ? Instantiate(playerPrefab, center, Quaternion.identity, safeRoot)
             : BuildSimplePlayer(center, safeRoot);
 
-        // Ensure correct tag
         player.tag = "Player";
-
-        // Ensure PlayerHealth exists and is easy to find
-        var ph = player.GetComponent<PlayerHealth>();
-        if (ph == null) ph = player.GetComponentInChildren<PlayerHealth>(true);
-        if (ph == null) ph = player.AddComponent<PlayerHealth>();
-
+        EnsurePlayerHealth(player);
+        EnsurePlayerRuntimeSetup(player);
         RegisterToUI(player);
     }
 
-    Transform GetSafeRoot()
+
+    GameObject FindExistingPlayer()
+    {
+        var tagged = GameObject.FindGameObjectWithTag("Player");
+        if (tagged != null) return tagged;
+
+        if (playerRoot != null && LooksLikePlayerObject(playerRoot.gameObject))
+            return playerRoot.gameObject;
+
+        return null;
+    }
+
+    void EnsurePlayerHealth(GameObject player)
+    {
+        if (player == null) return;
+
+        var ph = player.GetComponent<PlayerHealth>();
+        if (ph == null) ph = player.GetComponentInChildren<PlayerHealth>(true);
+        if (ph == null) player.AddComponent<PlayerHealth>();
+    }
+
+    void EnsurePlayerRuntimeSetup(GameObject player)
+    {
+        if (player == null) return;
+
+        var setup = player.GetComponent<PlayerRuntimeSetup>();
+        if (setup == null) setup = player.AddComponent<PlayerRuntimeSetup>();
+        setup.ConfigureNow();
+    }
+
+    Transform GetSafeRoot(GameObject existingPlayer)
     {
         if (playerRoot == null)
             return null; // no parent
+
+        if (existingPlayer != null && (playerRoot == existingPlayer.transform || playerRoot.IsChildOf(existingPlayer.transform)))
+            return null;
 
         if (!playerRoot.gameObject.activeInHierarchy)
         {
@@ -104,6 +149,16 @@ public class PlayerSpawner : MonoBehaviour
         }
 
         return playerRoot;
+    }
+
+    bool LooksLikePlayerObject(GameObject go)
+    {
+        if (go == null) return false;
+        if (go.CompareTag("Player")) return true;
+        if (go.GetComponent<PlayerMovement>() != null) return true;
+        if (go.GetComponent<PlayerHealth>() != null) return true;
+        if (go.GetComponent<CharacterController>() != null) return true;
+        return false;
     }
 
     void RegisterToUI(GameObject player)
