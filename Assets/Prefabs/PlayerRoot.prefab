@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 3480789793159004991}
   - component: {fileID: 5427502072854885389}
   - component: {fileID: 8244502231226721408}
+  - component: {fileID: -1633065090219471365}
+  - component: {fileID: 43461619180906534}
   m_Layer: 0
   m_Name: PlayerRoot
   m_TagString: Player
@@ -100,6 +102,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 160fa7fc74a3a904d8b97f487673a13b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  baseMaxHealth: 10
   maxHealth: 10
   currentHealth: 10
 --- !u!114 &8244502231226721408
@@ -117,6 +120,38 @@ MonoBehaviour:
   animator: {fileID: 0}
   controller: {fileID: 0}
   dampTime: 0.1
+--- !u!114 &-1633065090219471365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 845372608396723584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44223995ae16b7340aa53b7d3e3cf900, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PowerUpApplier
+  playerHealth: {fileID: 0}
+--- !u!114 &43461619180906534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 845372608396723584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e4dfa2c8e4815648a6829e165473fa8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerRootLightHealer
+  playerTag: Player
+  rebindInterval: 0.25
+  healRadius: 2.5
+  minHealth01ToHeal: 0.25
+  minPower01ForHeal: 0.25
+  healStepAmount: 0.5
+  tickSeconds: 1
 --- !u!1001 &5301210094012817605
 PrefabInstance:
   m_ObjectHideFlags: 0
