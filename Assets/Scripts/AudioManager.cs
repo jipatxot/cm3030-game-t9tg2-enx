@@ -70,4 +70,21 @@ public class AudioManager : MonoBehaviour
             Debug.LogWarning($"AUDIO TRIGGERED (ASSET MISSING): {soundName}");
         }
     }
+
+    // Plays a sound at a specific position in the world
+    public void PlayEffectAt(Sound soundName, Vector3 worldPosition)
+    {
+        var s = library.Find(x => x.soundName == soundName);
+        if (s.clip != null)
+        {
+            // Creates a temporary object at worldPosition, plays the clip, then destroys itself
+            AudioSource.PlayClipAtPoint(s.clip, worldPosition, s.volume);
+            Debug.Log($"AUDIO PLAYING: {soundName} at {worldPosition.ToString("F2")}");
+        }
+        else
+        {
+            // If the audio file is missing, log to the console
+            Debug.LogWarning($"AUDIO TRIGGERED (ASSET MISSING): {soundName}");
+        }
+    }
 }
