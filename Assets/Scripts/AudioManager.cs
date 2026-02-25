@@ -2,6 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// ---------------------------------------------------------------
+// The following sounds need to be hooked up in other scripts:
+//
+// PlayerDamage — add wherever the player takes damage:
+//     AudioManager.instance?.PlayEffect(AudioManager.Sound.PlayerDamage);
+//
+// Death — add wherever player death is handled:
+//     AudioManager.instance?.PlayEffect(AudioManager.Sound.Death);
+//
+// Sunrise — add wherever the session end / win condition is triggered:
+//     AudioManager.instance?.PlayEffect(AudioManager.Sound.Sunrise);
+//
+// HealthPickup — add wherever a pickup is collected:
+//     AudioManager.instance?.PlayEffect(AudioManager.Sound.PickupItem);
+//
+// UIClick — add wherever UI button presses are handled:
+//     AudioManager.instance?.PlayEffect(AudioManager.Sound.UIClick);
+// ---------------------------------------------------------------
+
 // Ensures this GameObject always has an AudioSource component attached
 [RequireComponent(typeof(AudioSource))]
 public class AudioManager : MonoBehaviour
@@ -16,7 +35,8 @@ public class AudioManager : MonoBehaviour
         Sunrise,
         Death,
         UIClick,
-        PowerLost
+        PowerLost,
+        HealthPickup
     }
 
     // One shared instance accessible from any script via AudioManager.instance
@@ -36,6 +56,21 @@ public class AudioManager : MonoBehaviour
 
     private AudioSource sfxSource;
 
+// Stores a background audio clip and its volume for ambient and music tracks
+    [Serializable]
+    public struct BackgroundSound
+    {
+        public AudioClip clip;
+        [Range(0f, 1f)] public float volume;
+    }
+
+    [Header("Ambient")] public BackgroundSound ambient;
+    private AudioSource ambientSource;
+
+    [Header("Music")] public BackgroundSound calmMusic;
+    public BackgroundSound intenseMusic;
+    private AudioSource musicSource;
+
     private void Awake()
     {
         // Keep only one AudioManager alive
@@ -51,6 +86,17 @@ public class AudioManager : MonoBehaviour
         }
 
         sfxSource = GetComponent<AudioSource>();
+
+        // Ambient runs on its own AudioSource,
+        // so its volume can be controlled independently of SFX
+        ambientSource = gameObject.AddComponent<AudioSource>();
+        ambientSource.loop = true;
+        ambientSource.volume = ambient.volume;
+        if (ambient.clip != null)
+        {
+            ambientSource.clip = ambient.clip;
+            ambientSource.Play();
+        }
     }
 
     // Finds and plays the audio clip in the library
