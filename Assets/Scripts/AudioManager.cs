@@ -11,7 +11,7 @@ public class AudioManager : MonoBehaviour
     public enum Sound
     {
         PowerRestored,
-        EnemySpawn,
+        EnemyChasing,
         PlayerDamage,
         Sunrise,
         Death,
