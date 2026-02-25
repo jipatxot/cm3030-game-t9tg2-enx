@@ -3,16 +3,14 @@
 // To be attached to light prefabs
 // Methods for the power system to trigger audio on state changes
 
-// To connect this to the power system, add the following calls to LightPowerDecay.cs:
+// To connect this to the power system, add the following calls:
 //
-// In Update(), after CurrentPower is set to 0:
+// Where the power is set to 0:
 //     GetComponent<PowerAudio>()?.OnPowerLost();
 //
-// In RestoreToFull(), after CurrentPower is set:
+// Where the power is increased by player:
 //     GetComponent<PowerAudio>()?.OnPowerRestored();
-//
-// In AddPower(), after CurrentPower is set:
-//     GetComponent<PowerAudio>()?.OnPowerRestored();
+
 public class PowerAudio : MonoBehaviour
 {
     // Called when the building loses power
