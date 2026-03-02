@@ -48,7 +48,7 @@ public class PowerUpPickup : MonoBehaviour
         applier.Apply(type, value, seconds);
 
         OnPickedUp?.Invoke(powerUpId);
-
+        AudioManager.instance?.PlayEffect(AudioManager.Sound.HealthPickup);
         Destroy(gameObject);
     }
 

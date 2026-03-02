@@ -144,7 +144,11 @@ public class MonsterWander : MonoBehaviour
 
     void SmartChase(Vector3 playerPos)
     {
-        if (!isChasing) isChasing = true;
+        if (!isChasing)
+        {
+            isChasing = true;
+            GetComponent<EnemySound>()?.OnStartChasing();
+        }
 
         if (Time.time < nextChaseTime) return;
 

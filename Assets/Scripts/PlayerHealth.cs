@@ -83,6 +83,7 @@ public class PlayerHealth : MonoBehaviour
 
         float before = currentHealth;
         currentHealth = Mathf.Max(0f, currentHealth - amount);
+        AudioManager.instance?.PlayEffect(AudioManager.Sound.PlayerDamage);
         float delta = currentHealth - before;
 
         // If boosted and you drop to base or below, boost ends immediately

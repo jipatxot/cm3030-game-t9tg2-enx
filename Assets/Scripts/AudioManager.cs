@@ -133,4 +133,19 @@ public class AudioManager : MonoBehaviour
             Debug.LogWarning($"AUDIO TRIGGERED (ASSET MISSING): {soundName}");
         }
     }
+
+    public void PauseMusic(bool pause)
+    {
+        if (musicSource != null)
+        {
+            if (pause) musicSource.Pause();
+            else musicSource.UnPause();
+        }
+
+        if (ambientSource != null)
+        {
+            if (pause) ambientSource.Pause();
+            else ambientSource.UnPause();
+        }
+    }
 }

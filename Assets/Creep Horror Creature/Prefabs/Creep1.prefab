@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1832134202571897039}
   - component: {fileID: 4288747415680719312}
   - component: {fileID: 6373898640581361647}
+  - component: {fileID: -6240820310352050275}
   m_Layer: 0
   m_Name: Creep1
   m_TagString: Untagged
@@ -138,6 +139,18 @@ MonoBehaviour:
   damagePerTick: 1
   damageInterval: 1
   attackRange: 1.4
+--- !u!114 &-6240820310352050275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2547632407910942000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54998b10fc164e1092623451681e884e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySound
 --- !u!1001 &2547632406756309541
 PrefabInstance:
   m_ObjectHideFlags: 0
