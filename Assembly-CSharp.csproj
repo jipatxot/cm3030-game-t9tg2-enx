@@ -78,6 +78,7 @@
     <Compile Include="Assets\Scripts\MonsterWalkSpeedSync.cs" />
     <Compile Include="Assets\Scripts\PowerAudio.cs" />
     <Compile Include="Assets\Scripts\LightDecay\BlackoutCountdownPreciseUI.cs" />
+    <Compile Include="Assets\Scripts\LightDecay\RepairHintPopupUI.cs" />
     <Compile Include="Assets\Scripts\LightDecay\SafeZoneRegistry.cs" />
     <Compile Include="Assets\Scripts\MonsterDamage.cs" />
     <Compile Include="Assets\Scripts\PowerUpSpawner.cs" />
@@ -94,7 +95,6 @@
     <Compile Include="Assets\Scripts\PlayerSpawner.cs" />
     <Compile Include="Assets\Scripts\PowerUpType.cs" />
     <Compile Include="Assets\Scripts\StreetFurnitureGenerator.cs" />
-    <Compile Include="Assets\Scripts\PopUp\RepairTutorialPopup.cs" />
     <Compile Include="Assets\Scripts\ParkAndTreeGenerator.cs" />
     <Compile Include="Assets\Scripts\CityInput.cs" />
     <Compile Include="Assets\PlayerControls.cs" />

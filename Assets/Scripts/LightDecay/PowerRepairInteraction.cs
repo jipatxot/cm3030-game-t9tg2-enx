@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-/// <summary>
+
 /// Press a key (default F) to repair the nearest light within a radius around the player.
 /// Repair calls LightPowerDecay.RestoreToFull().
-/// </summary>
 public class PowerRepairInteraction : MonoBehaviour
 {
     [Header("Input")]
