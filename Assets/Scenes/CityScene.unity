@@ -6052,7 +6052,14 @@ MonoBehaviour:
 
       Repair is faster.
 
-      Monsters deal less damage.'
+      Monsters deal less damage.
+
+
+      Use
+      WASD to move. Pres F to fix the light near you.
+
+      Give a Seed to randomize
+      map.'
     curveSpeed: 0.75
     multiplierScale: 0.85
     enemyNavSpeedMultiplier: 0.85
@@ -6070,7 +6077,13 @@ MonoBehaviour:
       Balanced
       repair.
 
-      Normal monster damage.'
+      Normal monster damage.
+
+
+      Use WASD to move. Pres F to fix
+      the light near you.
+
+      Give a Seed to randomize map.'
     curveSpeed: 1
     multiplierScale: 1
     enemyNavSpeedMultiplier: 1
@@ -6088,7 +6101,14 @@ MonoBehaviour:
 
       Repair takes longer.
 
-      Monsters deal more damage.'
+      Monsters deal more damage.
+
+
+      Use
+      WASD to move. Pres F to fix the light near you.
+
+      Give a Seed to randomize
+      map.'
     curveSpeed: 1.35
     multiplierScale: 1.2
     enemyNavSpeedMultiplier: 1.2
