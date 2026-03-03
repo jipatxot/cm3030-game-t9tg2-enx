@@ -200,6 +200,9 @@ public class LightPowerDecay : MonoBehaviour
         float prev = CurrentPower;
         CurrentPower = Mathf.Max(0f, CurrentPower - drain);
 
+        if (prev > 0f && CurrentPower <= 0f)
+            GetComponent<PowerAudio>()?.OnPowerLost();
+
         if (!Mathf.Approximately(prev, CurrentPower))
         {
             ApplyBrightness(NormalizedPower01, forceEnableDisable: false);
@@ -211,8 +214,8 @@ public class LightPowerDecay : MonoBehaviour
     {
         CurrentPower = EffectiveMaxPower;
         _graceTimer = graceAfterRepairSeconds;
-
-        ApplyBrightness(NormalizedPower01, forceEnableDisable: true);
+        GetComponent<PowerAudio>()?.OnPowerRestored();
+        ApplyBrightness(NormalizedPower01, true);
         PushDebug();
         OnAnyPowerChanged?.Invoke(this, CurrentPower, NormalizedPower01);
     }
@@ -223,6 +226,7 @@ public class LightPowerDecay : MonoBehaviour
 
         float cap = EffectiveMaxPower;
         CurrentPower = Mathf.Clamp(CurrentPower + amount, 0f, cap);
+        GetComponent<PowerAudio>()?.OnPowerRestored();
         _graceTimer = graceAfterRepairSeconds;
 
         ApplyBrightness(NormalizedPower01, forceEnableDisable: true);

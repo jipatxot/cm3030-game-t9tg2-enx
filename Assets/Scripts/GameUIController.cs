@@ -8,7 +8,6 @@ using UnityEngine.AI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using static System.Net.Mime.MediaTypeNames;
 
 public class GameUIController : MonoBehaviour
 {
@@ -489,7 +488,8 @@ public class GameUIController : MonoBehaviour
         if (powerManager != null) powerManager.isRunning = !paused;
 
         if (pauseAudio)
-            AudioListener.pause = paused;
+            // AudioListener.pause = paused;
+            AudioManager.instance?.PauseMusic(paused);
 
         if (pauseNavMeshAgents)
         {
@@ -687,6 +687,7 @@ public class GameUIController : MonoBehaviour
         ForceShowPanel(winPanel);
 
         if (creditsPanel != null) creditsPanel.SetActive(false);
+        AudioManager.instance?.PlayEffect(AudioManager.Sound.Sunrise);
         ApplyPauseState(true);
     }
 
@@ -700,6 +701,7 @@ public class GameUIController : MonoBehaviour
         ForceShowPanel(losePanel);
 
         if (creditsPanel != null) creditsPanel.SetActive(false);
+        AudioManager.instance?.PlayEffect(AudioManager.Sound.Death);
         ApplyPauseState(true);
     }
 

@@ -14,6 +14,14 @@ public class PlayerSpawner : MonoBehaviour
     public bool respawnOnRegenerate = true;
     public string walkableAreaName = "Walkable";
 
+    [Header("Player Size")]
+    [Tooltip("1 = original prefab size. 0.5 = half size, etc.")]
+    public float playerScale = 1f;
+
+    [Header("CharacterController scaling")]
+    [Tooltip("If true, scales CharacterController height/radius/center with playerScale.")]
+    public bool scaleCharacterController = true;
+
     [Header("Simple Player Visual")]
     public Color bodyColor = new Color(0.1f, 0.7f, 0.2f, 1f);
     public Color headColor = new Color(0.95f, 0.8f, 0.7f, 1f);
@@ -35,7 +43,6 @@ public class PlayerSpawner : MonoBehaviour
     {
         if (roads == null)
             roads = FindFirstObjectByType<RoadPathGenerator>();
-
     }
 
     void Start()
@@ -76,6 +83,8 @@ public class PlayerSpawner : MonoBehaviour
             existing.SetActive(true);
             existing.tag = "Player";
 
+            ApplyPlayerScale(existing);
+
             EnsurePlayerHealth(existing);
             EnsurePlayerRuntimeSetup(existing);
             RegisterToUI(existing);
@@ -83,8 +92,6 @@ public class PlayerSpawner : MonoBehaviour
             if (!respawnOnRegenerate)
                 return;
 
-            // If this existing player is the configured playerRoot object, reuse it.
-            // This supports workflows where users place their character model under playerRoot.
             if (playerRoot != null && existing == playerRoot.gameObject)
                 return;
 
@@ -99,11 +106,13 @@ public class PlayerSpawner : MonoBehaviour
             : BuildSimplePlayer(center, safeRoot);
 
         player.tag = "Player";
+
+        ApplyPlayerScale(player);
+
         EnsurePlayerHealth(player);
         EnsurePlayerRuntimeSetup(player);
         RegisterToUI(player);
     }
-
 
     GameObject FindExistingPlayer()
     {
@@ -189,6 +198,31 @@ public class PlayerSpawner : MonoBehaviour
         return basePos;
     }
 
+    void ApplyPlayerScale(GameObject player)
+    {
+        if (player == null) return;
+
+        float s = Mathf.Max(0.0001f, playerScale);
+
+        // Scale the whole player root
+        player.transform.localScale = Vector3.one * s;
+
+        if (!scaleCharacterController) return;
+
+        var cc = player.GetComponent<CharacterController>();
+        if (cc == null) return;
+
+        // Store "base" values once, then apply scaled.
+        // We store them in a hidden component so repeated spawns/regens don't keep multiplying.
+        var baseCC = player.GetComponent<PlayerBaseCharacterController>();
+        if (baseCC == null) baseCC = player.AddComponent<PlayerBaseCharacterController>();
+        baseCC.CaptureIfNeeded(cc);
+
+        cc.height = baseCC.baseHeight * s;
+        cc.radius = baseCC.baseRadius * s;
+        cc.center = baseCC.baseCenter * s;
+    }
+
     GameObject BuildSimplePlayer(Vector3 position, Transform parent)
     {
         var root = new GameObject("Player");
@@ -272,5 +306,28 @@ public class PlayerSpawner : MonoBehaviour
             var col = objects[i].GetComponent<Collider>();
             if (col != null) Destroy(col);
         }
+    }
+}
+
+/// Stores the original CharacterController settings so we can apply scaling safely
+/// without multiplying values every respawn/regenerate.
+public class PlayerBaseCharacterController : MonoBehaviour
+{
+    [HideInInspector] public bool captured;
+    [HideInInspector] public float baseHeight;
+    [HideInInspector] public float baseRadius;
+    [HideInInspector] public Vector3 baseCenter;
+    // [HideInInspector] public float baseStepOffset;
+
+    public void CaptureIfNeeded(CharacterController cc)
+    {
+        if (captured || cc == null) return;
+
+        baseHeight = cc.height;
+        baseRadius = cc.radius;
+        baseCenter = cc.center;
+        // baseStepOffset = cc.stepOffset;
+
+        captured = true;
     }
 }

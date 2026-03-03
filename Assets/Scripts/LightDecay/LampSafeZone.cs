@@ -7,14 +7,12 @@ public class LampSafeZone : MonoBehaviour, ISafeZone
     public float safeRadius = 3f;
     [Range(0f, 1f)] public float minPower01ForSafe = 0.05f;
 
-    [Header("Optional Healing")]
-    public float restoreRadius = 2.5f;
-    public int healthRestoreAmount = 1;
-    public float healCooldownSeconds = 2f;
-
     LightPowerDecay lampPower;
-    Transform playerTransform;
-    float nextHealTime;
+
+    public float Power01
+    {
+        get { return lampPower != null ? lampPower.NormalizedPower01 : 0f; }
+    }
 
     void Awake()
     {
@@ -29,31 +27,6 @@ public class LampSafeZone : MonoBehaviour, ISafeZone
     void OnDisable()
     {
         SafeZoneRegistry.Unregister(this);
-    }
-
-    void Update()
-    {
-        if (healthRestoreAmount <= 0) return;
-        if (lampPower == null || lampPower.NormalizedPower01 < minPower01ForSafe) return;
-        if (Time.time < nextHealTime) return;
-
-        if (playerTransform == null)
-        {
-            var player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null) playerTransform = player.transform;
-        }
-
-        if (playerTransform == null) return;
-
-        if (Vector3.Distance(playerTransform.position, transform.position) <= restoreRadius)
-        {
-            var health = playerTransform.GetComponent<PlayerHealth>();
-            if (health != null)
-            {
-                health.RestoreHealth(healthRestoreAmount);
-                nextHealTime = Time.time + healCooldownSeconds;
-            }
-        }
     }
 
     public bool IsPositionSafe(Vector3 position)

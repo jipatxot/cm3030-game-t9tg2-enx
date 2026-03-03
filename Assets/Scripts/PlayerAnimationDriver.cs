@@ -4,25 +4,32 @@ public class PlayerAnimationDriver : MonoBehaviour
 {
     public Animator animator;
     public CharacterController controller;
-    public float dampTime = 0.1f;
+
+    [Header("Smoothing")]
+    public float dampUp = 0.1f;     // when starting to move
+    public float dampDown = 0.02f;  // when stopping
+
+    float currentSpeed;
 
     void Awake()
     {
-        if (!controller)
-            controller = GetComponent<CharacterController>();
-
-        if (!animator)
-            animator = GetComponentInChildren<Animator>(true);
+        if (!controller) controller = GetComponent<CharacterController>();
+        if (!animator) animator = GetComponentInChildren<Animator>(true);
     }
 
     void Update()
     {
-        if (!animator || !controller)
-            return;
+        if (!animator || !controller) return;
 
-        Vector3 velocity = controller.velocity;
-        velocity.y = 0f; // ignore vertical motion
+        Vector3 v = controller.velocity;
+        v.y = 0f;
 
-        animator.SetFloat("Speed", velocity.magnitude, dampTime, Time.deltaTime);
+        float target = v.magnitude;
+
+        float damp = (target > currentSpeed) ? dampUp : dampDown;
+
+        animator.SetFloat("Speed", target, damp, Time.deltaTime);
+
+        currentSpeed = animator.GetFloat("Speed");
     }
 }
