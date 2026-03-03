@@ -6052,7 +6052,15 @@ MonoBehaviour:
 
       Repair is faster.
 
-      Monsters deal less damage.'
+      Monsters deal less damage.
+
+      AIM:
+      Keep alive until sunrise!
+
+      Use WASD to move. Pres F to fix the light
+      near you.
+
+      Give a Seed to randomize map.'
     curveSpeed: 0.75
     multiplierScale: 0.85
     enemyNavSpeedMultiplier: 0.85
@@ -6070,7 +6078,15 @@ MonoBehaviour:
       Balanced
       repair.
 
-      Normal monster damage.'
+      Normal monster damage.
+
+      AIM: Keep alive until sunrise!
+
+      Use
+      WASD to move. Pres F to fix the light near you.
+
+      Give a Seed to randomize
+      map.'
     curveSpeed: 1
     multiplierScale: 1
     enemyNavSpeedMultiplier: 1
@@ -6088,7 +6104,15 @@ MonoBehaviour:
 
       Repair takes longer.
 
-      Monsters deal more damage.'
+      Monsters deal more damage.
+
+      AIM:
+      Keep alive until sunrise!
+
+      Use WASD to move. Pres F to fix the light
+      near you.
+
+      Give a Seed to randomize map.'
     curveSpeed: 1.35
     multiplierScale: 1.2
     enemyNavSpeedMultiplier: 1.2
@@ -7598,6 +7622,7 @@ GameObject:
   - component: {fileID: 1714554827}
   - component: {fileID: 1714554831}
   - component: {fileID: 1714554830}
+  - component: {fileID: 1714554832}
   m_Layer: 0
   m_Name: CityGenerator
   m_TagString: Untagged
@@ -7973,6 +7998,41 @@ MonoBehaviour:
   outcomeProvider: {fileID: 0}
   winMemberName: 
   loseMemberName: 
+--- !u!114 &1714554832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714554818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e981b056784d5ef46ba17989708e747c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RepairHintPopupUI
+  repairInteraction: {fileID: 0}
+  playerOverride: {fileID: 0}
+  requiredNameContains: StreetLamp
+  fullyLitThreshold01: 0.45
+  treatVisiblyDarkAsNotFullyLit: 0
+  dimIntensityThreshold: 0.15
+  messageFormat: Press {0} to fix the light
+  screenOffset: {x: 0, y: 90}
+  fontSize: 28
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  enablePanel: 1
+  panelBackgroundColor: {r: 0.12897247, g: 0.8509804, b: 0.10980392, a: 0.15686275}
+  panelBorderColor: {r: 0, g: 0, b: 0, a: 0}
+  borderThickness: 1
+  textPadding: {x: 1, y: 1, z: 1, w: 1}
+  maxPanelWidth: 700
+  minPanelSize: {x: 140, y: 54}
+  targetCanvas: {fileID: 0}
+  createdCanvasSortingOrder: 9999
+  scanInterval: 0.12
+  preferredCamera: {fileID: 0}
+  screenEdgePadding: 20
+  logOnceWhenTriggered: 1
 --- !u!1 &1729683583
 GameObject:
   m_ObjectHideFlags: 0
