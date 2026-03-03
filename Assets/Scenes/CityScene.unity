@@ -6054,12 +6054,13 @@ MonoBehaviour:
 
       Monsters deal less damage.
 
+      AIM:
+      Keep alive until sunrise!
 
-      Use
-      WASD to move. Pres F to fix the light near you.
+      Use WASD to move. Pres F to fix the light
+      near you.
 
-      Give a Seed to randomize
-      map.'
+      Give a Seed to randomize map.'
     curveSpeed: 0.75
     multiplierScale: 0.85
     enemyNavSpeedMultiplier: 0.85
@@ -6079,11 +6080,13 @@ MonoBehaviour:
 
       Normal monster damage.
 
+      AIM: Keep alive until sunrise!
 
-      Use WASD to move. Pres F to fix
-      the light near you.
+      Use
+      WASD to move. Pres F to fix the light near you.
 
-      Give a Seed to randomize map.'
+      Give a Seed to randomize
+      map.'
     curveSpeed: 1
     multiplierScale: 1
     enemyNavSpeedMultiplier: 1
@@ -6103,12 +6106,13 @@ MonoBehaviour:
 
       Monsters deal more damage.
 
+      AIM:
+      Keep alive until sunrise!
 
-      Use
-      WASD to move. Pres F to fix the light near you.
+      Use WASD to move. Pres F to fix the light
+      near you.
 
-      Give a Seed to randomize
-      map.'
+      Give a Seed to randomize map.'
     curveSpeed: 1.35
     multiplierScale: 1.2
     enemyNavSpeedMultiplier: 1.2
@@ -8009,12 +8013,20 @@ MonoBehaviour:
   repairInteraction: {fileID: 0}
   playerOverride: {fileID: 0}
   requiredNameContains: StreetLamp
-  fullyLitThreshold01: 0.7
+  fullyLitThreshold01: 0.45
   treatVisiblyDarkAsNotFullyLit: 0
   dimIntensityThreshold: 0.15
   messageFormat: Press {0} to fix the light
   screenOffset: {x: 0, y: 90}
   fontSize: 28
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  enablePanel: 1
+  panelBackgroundColor: {r: 0.12897247, g: 0.8509804, b: 0.10980392, a: 0.15686275}
+  panelBorderColor: {r: 0, g: 0, b: 0, a: 0}
+  borderThickness: 1
+  textPadding: {x: 1, y: 1, z: 1, w: 1}
+  maxPanelWidth: 700
+  minPanelSize: {x: 140, y: 54}
   targetCanvas: {fileID: 0}
   createdCanvasSortingOrder: 9999
   scanInterval: 0.12

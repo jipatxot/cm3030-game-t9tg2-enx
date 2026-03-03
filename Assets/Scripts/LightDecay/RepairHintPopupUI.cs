@@ -12,40 +12,46 @@ using UnityEngine.UI;
 ///   and will not show again.
 /// - If the player does not press the key and leaves, it can show again next time.
 ///
+/// UI Improvements:
+/// - Rounded-corner panel (uses Unity built-in sliced UI sprites)
+/// - Semi-transparent white background (alpha ~ 40%)
+/// - Border (separate sliced image behind the background)
+///
 /// Attach to ANY active GameObject (e.g., the same GameObject as PowerRepairInteraction or a UI manager).
 /// Requires the player GameObject to have Tag = "Player" (same as PowerRepairInteraction).
+
 public class RepairHintPopupUI : MonoBehaviour
 {
     [Header("References (optional)")]
-    [Tooltip("If empty, we try to find a PowerRepairInteraction in the scene and mirror its key/radius.")]
     public PowerRepairInteraction repairInteraction;
-
-    [Tooltip("If empty, we find the Player by Tag 'Player'.")]
     public Transform playerOverride;
 
     [Header("Lamp filter")]
-    [Tooltip("Only show for objects whose name contains this (e.g., StreetLamp(Clone)).")]
     public string requiredNameContains = "StreetLamp";
 
     [Header("When to show")]
-    [Range(0f, 1f)]
-    [Tooltip("If lamp power01 is below this, we consider it 'not fully lit'.")]
-    public float fullyLitThreshold01 = 0.999f;
-
-    [Tooltip("Also treat lamps as 'not fully lit' if their child Lights are disabled or very dim.")]
+    [Range(0f, 1f)] public float fullyLitThreshold01 = 0.999f;
     public bool treatVisiblyDarkAsNotFullyLit = true;
-
     [Min(0f)] public float dimIntensityThreshold = 0.15f;
 
-    [Header("UI")]
+    [Header("UI - Text")]
     public string messageFormat = "Press {0} to turn on the light.";
     public Vector2 screenOffset = new Vector2(0f, 90f);
     public int fontSize = 28;
+    public Color textColor = new Color(0.1f, 0.1f, 0.1f, 1f);
 
-    [Tooltip("Optional existing canvas. If null, a Screen Space Overlay canvas is created.")]
+    [Header("UI - Panel (Rounded)")]
+    public bool enablePanel = true;
+    public Color panelBackgroundColor = new Color(1f, 1f, 1f, 0.40f);
+    public Color panelBorderColor = new Color(0f, 0f, 0f, 0.55f);
+    [Min(0f)] public float borderThickness = 4f;
+    public Vector4 textPadding = new Vector4(18f, 10f, 18f, 10f);
+
+    [Header("UI - Auto size")]
+    [Min(0f)] public float maxPanelWidth = 700f;     // 0 = no limit
+    public Vector2 minPanelSize = new Vector2(140f, 54f);
+
     public Canvas targetCanvas;
-
-    [Tooltip("Sorting order when we auto-create a canvas.")]
     public int createdCanvasSortingOrder = 9999;
 
     [Header("Scan timing")]
@@ -53,7 +59,6 @@ public class RepairHintPopupUI : MonoBehaviour
 
     [Header("Camera (for world->screen)")]
     public Camera preferredCamera;
-
     [Min(0f)] public float screenEdgePadding = 20f;
 
     [Header("Debug")]
@@ -62,17 +67,21 @@ public class RepairHintPopupUI : MonoBehaviour
     bool _tutorialCompleted;
     float _scanTimer;
 
-    // UI
     Canvas _createdCanvas;
     GameObject _popupGO;
     RectTransform _popupRT;
     CanvasGroup _popupGroup;
+
+    RectTransform _bgRT;
+    RectTransform _textRT;
+
+    Image _borderImage;
+    Image _bgImage;
     Text _popupText;
 
     Camera _cam;
     bool _loggedTriggered;
 
-    // Cache child lights per lamp for the "visibly dark" check
     readonly Dictionary<LightPowerDecay, Light[]> _lampLightsCache = new Dictionary<LightPowerDecay, Light[]>();
 
     void Awake()
@@ -108,10 +117,8 @@ public class RepairHintPopupUI : MonoBehaviour
             return;
         }
 
-        // Mirror key from repair script (default F)
         Key key = (repairInteraction != null) ? repairInteraction.repairKey : Key.F;
 
-        // If key pressed while popup visible => complete tutorial for this run
         var kb = Keyboard.current;
         if (kb != null && kb[key].wasPressedThisFrame)
         {
@@ -123,7 +130,6 @@ public class RepairHintPopupUI : MonoBehaviour
             }
         }
 
-        // Throttled scan (unscaled so it works even if timeScale=0)
         _scanTimer += Time.unscaledDeltaTime;
         if (_scanTimer < scanInterval)
         {
@@ -171,10 +177,7 @@ public class RepairHintPopupUI : MonoBehaviour
 
     LightPowerDecay FindNearestLampNeedingRepair(Vector3 playerPos, float radius)
     {
-        // Use XZ distance like PowerRepairInteraction (ignore y)
         float r2 = radius * radius;
-
-        // We scan all lights including inactive (same as repair) to avoid missing at startup
         List<LightPowerDecay> list = GetAllIncludingInactive();
 
         LightPowerDecay best = null;
@@ -185,7 +188,6 @@ public class RepairHintPopupUI : MonoBehaviour
             var d = list[i];
             if (d == null) continue;
 
-            // Filter only StreetLamp (by name)
             if (!string.IsNullOrEmpty(requiredNameContains))
             {
                 string n = d.gameObject.name;
@@ -264,8 +266,6 @@ public class RepairHintPopupUI : MonoBehaviour
         return new List<LightPowerDecay>(found);
     }
 
-    // ---------- UI helpers ----------
-
     void EnsureUI()
     {
         if (_popupGO != null && _popupText != null && _popupGroup != null)
@@ -302,28 +302,77 @@ public class RepairHintPopupUI : MonoBehaviour
         _popupRT.anchorMin = new Vector2(0.5f, 0.5f);
         _popupRT.anchorMax = new Vector2(0.5f, 0.5f);
         _popupRT.pivot = new Vector2(0.5f, 0.5f);
-        _popupRT.sizeDelta = new Vector2(900f, 80f);
+        _popupRT.sizeDelta = minPanelSize;
 
         _popupGroup = _popupGO.AddComponent<CanvasGroup>();
         _popupGroup.alpha = 0f;
         _popupGroup.interactable = false;
         _popupGroup.blocksRaycasts = false;
 
-        var textGO = new GameObject("Text");
-        textGO.transform.SetParent(_popupGO.transform, false);
+        Sprite rounded = LoadRoundedUISpriteSafe();
 
-        var trt = textGO.AddComponent<RectTransform>();
-        trt.anchorMin = Vector2.zero;
-        trt.anchorMax = Vector2.one;
-        trt.offsetMin = Vector2.zero;
-        trt.offsetMax = Vector2.zero;
+        if (enablePanel)
+        {
+            var borderGO = new GameObject("Border");
+            borderGO.transform.SetParent(_popupGO.transform, false);
+            var brt = borderGO.AddComponent<RectTransform>();
+            brt.anchorMin = Vector2.zero;
+            brt.anchorMax = Vector2.one;
+            brt.offsetMin = Vector2.zero;
+            brt.offsetMax = Vector2.zero;
 
-        _popupText = textGO.AddComponent<Text>();
+            _borderImage = borderGO.AddComponent<Image>();
+            _borderImage.sprite = rounded;
+            _borderImage.type = Image.Type.Sliced;
+            _borderImage.color = panelBorderColor;
+            _borderImage.raycastTarget = false;
+
+            var bgGO = new GameObject("Background");
+            bgGO.transform.SetParent(_popupGO.transform, false);
+            _bgRT = bgGO.AddComponent<RectTransform>();
+            _bgRT.anchorMin = Vector2.zero;
+            _bgRT.anchorMax = Vector2.one;
+            _bgRT.offsetMin = new Vector2(borderThickness, borderThickness);
+            _bgRT.offsetMax = new Vector2(-borderThickness, -borderThickness);
+
+            _bgImage = bgGO.AddComponent<Image>();
+            _bgImage.sprite = rounded;
+            _bgImage.type = Image.Type.Sliced;
+            _bgImage.color = panelBackgroundColor;
+            _bgImage.raycastTarget = false;
+
+            var textGO = new GameObject("Text");
+            textGO.transform.SetParent(bgGO.transform, false);
+
+            _textRT = textGO.AddComponent<RectTransform>();
+            _textRT.anchorMin = Vector2.zero;
+            _textRT.anchorMax = Vector2.one;
+            _textRT.offsetMin = new Vector2(textPadding.x, textPadding.y);
+            _textRT.offsetMax = new Vector2(-textPadding.z, -textPadding.w);
+
+            _popupText = textGO.AddComponent<Text>();
+        }
+        else
+        {
+            var textGO = new GameObject("Text");
+            textGO.transform.SetParent(_popupGO.transform, false);
+
+            _textRT = textGO.AddComponent<RectTransform>();
+            _textRT.anchorMin = Vector2.zero;
+            _textRT.anchorMax = Vector2.one;
+            _textRT.offsetMin = Vector2.zero;
+            _textRT.offsetMax = Vector2.zero;
+
+            _popupText = textGO.AddComponent<Text>();
+        }
+
         _popupText.alignment = TextAnchor.MiddleCenter;
         _popupText.fontSize = fontSize;
-        _popupText.color = Color.white;
+        _popupText.color = textColor;
         _popupText.raycastTarget = false;
         _popupText.font = LoadBuiltinFontSafe();
+        _popupText.horizontalOverflow = HorizontalWrapMode.Overflow;
+        _popupText.verticalOverflow = VerticalWrapMode.Overflow;
     }
 
     void ShowPopup(Key key)
@@ -332,9 +381,53 @@ public class RepairHintPopupUI : MonoBehaviour
 
         if (_popupText != null)
         {
-            string k = key.ToString(); // e.g., F
+            string k = key.ToString();
             string msg = string.Format(messageFormat, k);
             if (_popupText.text != msg) _popupText.text = msg;
+        }
+
+        if (_borderImage != null) _borderImage.color = panelBorderColor;
+        if (_bgImage != null) _bgImage.color = panelBackgroundColor;
+        if (_popupText != null) _popupText.color = textColor;
+
+        UpdatePanelSizeToText();
+    }
+
+    void UpdatePanelSizeToText()
+    {
+        if (_popupRT == null || _popupText == null) return;
+
+        float availableForText = maxPanelWidth > 0f
+            ? Mathf.Max(10f, maxPanelWidth - (enablePanel ? borderThickness * 2f : 0f) - textPadding.x - textPadding.z)
+            : float.PositiveInfinity;
+
+        _popupText.horizontalOverflow = (_popupText.preferredWidth > availableForText) ? HorizontalWrapMode.Wrap : HorizontalWrapMode.Overflow;
+
+        Canvas.ForceUpdateCanvases();
+
+        float textW = _popupText.preferredWidth;
+        float textH = _popupText.preferredHeight;
+
+        float w = textW + textPadding.x + textPadding.z + (enablePanel ? borderThickness * 2f : 0f);
+        float h = textH + textPadding.y + textPadding.w + (enablePanel ? borderThickness * 2f : 0f);
+
+        if (maxPanelWidth > 0f) w = Mathf.Min(w, maxPanelWidth);
+
+        w = Mathf.Max(w, minPanelSize.x);
+        h = Mathf.Max(h, minPanelSize.y);
+
+        _popupRT.sizeDelta = new Vector2(w, h);
+
+        if (_bgRT != null)
+        {
+            _bgRT.offsetMin = new Vector2(borderThickness, borderThickness);
+            _bgRT.offsetMax = new Vector2(-borderThickness, -borderThickness);
+        }
+
+        if (_textRT != null)
+        {
+            _textRT.offsetMin = new Vector2(textPadding.x, textPadding.y);
+            _textRT.offsetMax = new Vector2(-textPadding.z, -textPadding.w);
         }
     }
 
@@ -395,7 +488,6 @@ public class RepairHintPopupUI : MonoBehaviour
 
         if (_cam == null)
         {
-            // Fallback: center-ish
             _popupRT.anchoredPosition = screenOffset;
             return;
         }
@@ -404,7 +496,6 @@ public class RepairHintPopupUI : MonoBehaviour
 
         Vector3 screen = _cam.WorldToScreenPoint(player.position);
 
-        // behind camera -> mirror
         if (screen.z < 0f)
         {
             screen.x = Screen.width - screen.x;
@@ -447,6 +538,13 @@ public class RepairHintPopupUI : MonoBehaviour
     {
         try { return Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); } catch { }
         try { return Resources.GetBuiltinResource<Font>("Arial.ttf"); } catch { }
+        return null;
+    }
+
+    static Sprite LoadRoundedUISpriteSafe()
+    {
+        try { return Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd"); } catch { }
+        try { return Resources.GetBuiltinResource<Sprite>("UI/Skin/Background.psd"); } catch { }
         return null;
     }
 }
