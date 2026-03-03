@@ -5789,6 +5789,7 @@ GameObject:
   - component: {fileID: 1394281759}
   - component: {fileID: 1394281762}
   - component: {fileID: 1394281760}
+  - component: {fileID: 1394281763}
   m_Layer: 0
   m_Name: PlayerRoot
   m_TagString: Untagged
@@ -5843,6 +5844,37 @@ MonoBehaviour:
   minPower01ForHeal: 0.25
   healStepAmount: 0.5
   tickSeconds: 1
+--- !u!114 &1394281763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1394281758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61e67fc76a9686741ae181fc49043d35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RepairTutorialPopup
+  repairKey: 20
+  searchRadius: 3
+  fullyLitThreshold01: 0.799
+  requirePlayerMoved: 0
+  minMoveDistance: 0.25
+  useNameFilter: 1
+  requiredNameContains: StreetLamp
+  useTagFilter: 0
+  lampTag: StreetLamp
+  rememberAcrossRuns: 0
+  worldCanvas: {fileID: 0}
+  messageText: {fileID: 0}
+  popupOffset: {x: 0, y: 2, z: 0}
+  worldUIScale: 0.01
+  promptMessage: Press F to turn on the light.
+  fontSize: 36
+  boxSize: {x: 600, y: 120}
+  faceCamera: 1
+  scanInterval: 0.15
 --- !u!1 &1425425614
 GameObject:
   m_ObjectHideFlags: 0
