@@ -41,6 +41,10 @@ public class GameUIController : MonoBehaviour
     public ToggleGroup difficultyToggleGroup; // optional
     public TMP_Text difficultyDescriptionText;
 
+    [Header("Difficulty UI (Settings Panel - NEW)")]
+    public TMP_Dropdown difficultyDropdown;                   // Easy / Normal / Hard
+    public TMP_Text settingsDifficultyDescriptionText;        // right-side description text in Settings
+
     [Header("Session Duration UI (Start Panel)")]
     public TMP_Dropdown sessionDurationDropdown;
 
@@ -98,7 +102,7 @@ public class GameUIController : MonoBehaviour
     [Header("Difficulty Settings")]
     public DifficultyConfig low = new DifficultyConfig
     {
-        description = "Low.\n\nLights last longer.\nEnemies are slower.\nRepair is instant.\nDamage is lower.",
+        description = "Easy.\n\nLights dim slowly and last longer.\nEnemies move more slowly.\nRepairs are fast.\nMonsters deal less damage.",
         curveSpeed = 0.75f,
         multiplierScale = 0.85f,
         enemyNavSpeedMultiplier = 0.85f,
@@ -109,7 +113,7 @@ public class GameUIController : MonoBehaviour
 
     public DifficultyConfig medium = new DifficultyConfig
     {
-        description = "Medium.\n\nBalanced settings.",
+        description = "Normal.\n\nLights dim at a steady pace.\nEnemies move at normal speed.\nRepairs require some time.\nMonsters deal moderate damage.",
         curveSpeed = 1f,
         multiplierScale = 1f,
         enemyNavSpeedMultiplier = 1f,
@@ -120,7 +124,7 @@ public class GameUIController : MonoBehaviour
 
     public DifficultyConfig high = new DifficultyConfig
     {
-        description = "High.\n\nLights go out quicker.\nEnemies are faster.\nRepair takes longer.\nDamage is higher.",
+        description = "Hard.\n\nLights fade quickly.\nEnemies move faster.\nRepairs take longer.\nMonsters deal heavy damage.",
         curveSpeed = 1.35f,
         multiplierScale = 1.2f,
         enemyNavSpeedMultiplier = 1.2f,
@@ -170,6 +174,10 @@ public class GameUIController : MonoBehaviour
     void OnDestroy()
     {
         UnhookPlayerDeath();
+
+        // Clean up dropdown listener (safe even if null).
+        if (difficultyDropdown != null)
+            difficultyDropdown.onValueChanged.RemoveListener(OnDifficultyDropdownChanged);
     }
 
     void WireButtons()
@@ -194,8 +202,10 @@ public class GameUIController : MonoBehaviour
 
     void SetupDifficultyUI()
     {
+        // Default selection.
         selectedDifficulty = SelectedDifficulty.Medium;
 
+        // --- Existing toggle wiring (Start Panel) ---
         if (lowToggle != null)
         {
             if (difficultyToggleGroup != null) lowToggle.group = difficultyToggleGroup;
@@ -217,8 +227,46 @@ public class GameUIController : MonoBehaviour
         if (mediumToggle != null)
             mediumToggle.isOn = true;
 
+        // --- NEW dropdown wiring (Settings Panel) ---
+        // Assumes options are: 0 Easy, 1 Normal, 2 Hard.
+        if (difficultyDropdown != null)
+        {
+            difficultyDropdown.onValueChanged.RemoveListener(OnDifficultyDropdownChanged);
+            difficultyDropdown.onValueChanged.AddListener(OnDifficultyDropdownChanged);
+
+            // Set dropdown default to match current selectedDifficulty, without triggering extra work.
+            difficultyDropdown.SetValueWithoutNotify(DifficultyToDropdownIndex(selectedDifficulty));
+        }
+
         UpdateDifficultyDescription();
         EnforceSingleDifficultyToggle();
+    }
+
+    void OnDifficultyDropdownChanged(int index)
+    {
+        // Map dropdown selection to existing difficulty enum.
+        SelectDifficulty(DropdownIndexToDifficulty(index));
+    }
+
+    static SelectedDifficulty DropdownIndexToDifficulty(int index)
+    {
+        // 0 Easy -> Low, 1 Normal -> Medium, 2 Hard -> High.
+        switch (index)
+        {
+            case 0: return SelectedDifficulty.Low;
+            case 2: return SelectedDifficulty.High;
+            default: return SelectedDifficulty.Medium;
+        }
+    }
+
+    static int DifficultyToDropdownIndex(SelectedDifficulty d)
+    {
+        switch (d)
+        {
+            case SelectedDifficulty.Low: return 0;
+            case SelectedDifficulty.High: return 2;
+            default: return 1;
+        }
     }
 
     void EnforceSingleDifficultyToggle()
@@ -232,6 +280,11 @@ public class GameUIController : MonoBehaviour
         highToggle.isOn = false;
         mediumToggle.isOn = true;
         selectedDifficulty = SelectedDifficulty.Medium;
+
+        // Keep dropdown in sync too.
+        if (difficultyDropdown != null)
+            difficultyDropdown.SetValueWithoutNotify(DifficultyToDropdownIndex(selectedDifficulty));
+
         UpdateDifficultyDescription();
     }
 
@@ -239,6 +292,7 @@ public class GameUIController : MonoBehaviour
     {
         selectedDifficulty = d;
 
+        // Keep toggles in sync (if they exist).
         if (difficultyToggleGroup == null)
         {
             if (lowToggle != null) lowToggle.SetIsOnWithoutNotify(d == SelectedDifficulty.Low);
@@ -246,15 +300,25 @@ public class GameUIController : MonoBehaviour
             if (highToggle != null) highToggle.SetIsOnWithoutNotify(d == SelectedDifficulty.High);
         }
 
+        // Keep dropdown in sync (if it exists).
+        if (difficultyDropdown != null)
+            difficultyDropdown.SetValueWithoutNotify(DifficultyToDropdownIndex(d));
+
         UpdateDifficultyDescription();
     }
 
     void UpdateDifficultyDescription()
     {
-        if (difficultyDescriptionText == null) return;
-
         var cfg = GetSelectedDifficultyConfig();
-        difficultyDescriptionText.text = (cfg != null && !string.IsNullOrWhiteSpace(cfg.description)) ? cfg.description : "";
+        string desc = (cfg != null && !string.IsNullOrWhiteSpace(cfg.description)) ? cfg.description : "";
+
+        // Old description (Start Panel).
+        if (difficultyDescriptionText != null)
+            difficultyDescriptionText.text = desc;
+
+        // New description (Settings Panel, right side).
+        if (settingsDifficultyDescriptionText != null)
+            settingsDifficultyDescriptionText.text = desc;
     }
 
     DifficultyConfig GetSelectedDifficultyConfig()
@@ -488,7 +552,6 @@ public class GameUIController : MonoBehaviour
         if (powerManager != null) powerManager.isRunning = !paused;
 
         if (pauseAudio)
-            // AudioListener.pause = paused;
             AudioManager.instance?.PauseMusic(paused);
 
         if (pauseNavMeshAgents)
@@ -553,6 +616,10 @@ public class GameUIController : MonoBehaviour
 
         SelectDifficulty(SelectedDifficulty.Medium);
         if (mediumToggle != null) mediumToggle.isOn = true;
+
+        // Keep dropdown default in sync when returning to menu/settings.
+        if (difficultyDropdown != null)
+            difficultyDropdown.SetValueWithoutNotify(DifficultyToDropdownIndex(selectedDifficulty));
 
         if (seedInput != null)
         {
@@ -765,16 +832,13 @@ public class GameUIController : MonoBehaviour
 
     public void HotkeyRestartRun()
     {
-        // Only restart if a run is active
         if (!gameStarted) return;
 
-        // Make sure we are not paused
         if (creditsPanel != null) creditsPanel.SetActive(false);
         if (pausePanel != null) pausePanel.SetActive(false);
         if (winPanel != null) winPanel.SetActive(false);
         if (losePanel != null) losePanel.SetActive(false);
 
-        // Same behaviour as clicking Restart on lose panel:
         RestartGame();
     }
 
