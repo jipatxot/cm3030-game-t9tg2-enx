@@ -40,7 +40,7 @@ public class RepairHintPopupUI : MonoBehaviour
     public FontStyles tmpStyle = FontStyles.Bold;
 
     [Header("UI - Text")]
-    public string messageFormat = "Press {0} to turn on the light.";
+    public string messageFormat = "Press {0} to fix the lamp post.";
     public Vector2 screenOffset = new Vector2(0f, 90f);
     public int fontSize = 28;
     public Color textColor = new Color(0.1f, 0.1f, 0.1f, 1f);
