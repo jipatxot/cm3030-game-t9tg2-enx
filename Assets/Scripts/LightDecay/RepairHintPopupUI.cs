@@ -65,6 +65,15 @@ public class RepairHintPopupUI : MonoBehaviour
     [Header("Camera (for world->screen)")]
     public Camera preferredCamera;
     [Min(0f)] public float screenEdgePadding = 20f;
+    
+    [Header("Visibility Gate")]
+    public bool onlyShowWhenGamePlayPanelActive = true;
+
+    // You can also use this if you want to manually drag and drop the GamePlayPanel (optional)
+    public GameObject gamePlayPanelOverride;
+
+    // If you don't drag and drop, the script will search by name (which is your name by default).
+    public string gamePlayPanelName = "GamePlayPanel";
 
     [Header("Debug")]
     public bool logOnceWhenTriggered = false;
@@ -116,6 +125,14 @@ public class RepairHintPopupUI : MonoBehaviour
 
     void Update()
     {
+        
+        if (!IsGamePlayPanelActive())
+        {
+            HidePopupImmediate();
+            return;
+        }
+        
+        
         if (_tutorialCompleted)
         {
             HidePopupImmediate();
@@ -169,6 +186,36 @@ public class RepairHintPopupUI : MonoBehaviour
         }
     }
 
+    
+    bool IsGamePlayPanelActive()
+    {
+        if (!onlyShowWhenGamePlayPanelActive) return true;
+
+        if (gamePlayPanelOverride != null)
+            return gamePlayPanelOverride.activeInHierarchy;
+
+        //Prioritize retrieving from GameUIController (it's more reliable).
+#if UNITY_2023_1_OR_NEWER
+        var ui = FindFirstObjectByType<GameUIController>(FindObjectsInactive.Include);
+#else
+    var ui = FindObjectOfType<GameUIController>(true);
+#endif
+        if (ui != null && ui.gamePlayPanel != null)
+            return ui.gamePlayPanel.activeInHierarchy;
+
+        // Taking a step back: search by name
+        var go = GameObject.Find(gamePlayPanelName);
+        if (go != null)
+        {
+            gamePlayPanelOverride = go; // cache
+            return go.activeInHierarchy;
+        }
+
+        // If you can't find it, treat it as if it shouldn't be displayed to avoid accidental pop-ups in the menu.
+        return false;
+    }
+    
+    
     bool TryGetPlayer(out Transform p)
     {
         if (playerOverride != null) { p = playerOverride; return true; }
