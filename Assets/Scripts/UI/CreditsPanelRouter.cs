@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
+
 /// Fixes "Credits button does nothing" by wiring Credits navigation at runtime,
 /// even if Inspector references are missing.
 /// 
@@ -17,7 +17,6 @@ using UnityEngine.UI;
 /// whose label text contains "CREDITS". It also wires a "Back" button on CreditsPanel if present.
 /// 
 /// This script does NOT require modifying GameUIController.
-/// </summary>
 public class CreditsPanelRouter : MonoBehaviour
 {
     public static bool CreditsOpenedFromMenu { get; private set; }

@@ -167,6 +167,14 @@ public class RestoreMenuVisualsOnEnable : MonoBehaviour
         if (ui.pausePanel != null) ui.pausePanel.SetActive(false);
         if (ui.gamePlayPanel != null) ui.gamePlayPanel.SetActive(false);
         if (ui.creditsPanel != null) ui.creditsPanel.SetActive(false);
+        // try
+        // {
+        //     if (ui.RepairHintPopup != null) ui.RepairHintPopup.SetActive(false);
+        // }
+        // catch
+        // {
+        //     
+        // }
 
         // ui.startPanel is already active because this script lives on it, but keep safe:
         if (ui.startPanel != null) ui.startPanel.SetActive(true);

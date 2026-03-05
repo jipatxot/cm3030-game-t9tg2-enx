@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
+
 /// Prevents the gameplay world (generated city and player) from showing behind menu panels.
 /// 
 /// It hides Renderers and Lights under CityGenerator and PlayerRoot while the user is in menu context:
@@ -11,7 +11,6 @@ using UnityEngine;
 /// 
 /// This avoids disabling CityGenerator, so it will not break procedural generation.
 /// Attach this to a persistent object, such as the same GameObject as GameUIController.
-/// </summary>
 public class MenuWorldBackdropController : MonoBehaviour
 {
     [Header("World roots")]
@@ -26,6 +25,19 @@ public class MenuWorldBackdropController : MonoBehaviour
 
     [Header("Update")]
     [Min(0.05f)] public float rescanInterval = 0.35f;
+    
+    // --- add to MenuWorldBackdropController fields ---
+    [Header("Menu camera backdrop (optional)")]
+    public bool forceSolidColorInMenu = true;
+    public Color menuClearColor = Color.black;
+    public Camera targetCamera;
+    
+    CameraClearFlags _prevClearFlags;
+    Color _prevBgColor;
+    Skybox _skyboxComp;
+    bool _prevSkyboxEnabled;
+    bool _cameraCaptured;
+
 
     [Header("Debug")]
     public bool logStateChanges = false;
@@ -68,13 +80,54 @@ public class MenuWorldBackdropController : MonoBehaviour
         else if (!inMenu && _worldHidden)
         {
             ShowWorld();
+            RestoreMenuCameraBackdrop();
             _worldHidden = false;
             if (logStateChanges) Debug.Log("[MenuWorldBackdropController] Restoring world for gameplay.");
         }
         else if (inMenu && _worldHidden)
         {
             HideWorld();
+            ApplyMenuCameraBackdrop();
         }
+    }
+    
+    
+    // Call this when entering menu
+    void ApplyMenuCameraBackdrop()
+    {
+        if (!forceSolidColorInMenu) return;
+
+        if (targetCamera == null) targetCamera = Camera.main;
+        if (targetCamera == null) return;
+
+        if (!_cameraCaptured)
+        {
+            _prevClearFlags = targetCamera.clearFlags;
+            _prevBgColor = targetCamera.backgroundColor;
+
+            _skyboxComp = targetCamera.GetComponent<Skybox>();
+            _prevSkyboxEnabled = (_skyboxComp != null && _skyboxComp.enabled);
+
+            _cameraCaptured = true;
+        }
+
+        targetCamera.clearFlags = CameraClearFlags.SolidColor;
+        targetCamera.backgroundColor = menuClearColor;
+
+        if (_skyboxComp != null) _skyboxComp.enabled = false;
+    }
+
+    // Call this when leaving menu
+    void RestoreMenuCameraBackdrop()
+    {
+        if (!forceSolidColorInMenu) return;
+        if (!_cameraCaptured) return;
+        if (targetCamera == null) return;
+
+        targetCamera.clearFlags = _prevClearFlags;
+        targetCamera.backgroundColor = _prevBgColor;
+
+        if (_skyboxComp != null) _skyboxComp.enabled = _prevSkyboxEnabled;
     }
 
     void CacheReferences()
