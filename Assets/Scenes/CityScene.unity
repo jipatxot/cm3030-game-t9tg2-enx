@@ -11274,6 +11274,9 @@ MonoBehaviour:
   scanInterval: 0.12
   preferredCamera: {fileID: 0}
   screenEdgePadding: 20
+  onlyShowWhenGamePlayPanelActive: 1
+  gamePlayPanelOverride: {fileID: 1589114969221429006}
+  gamePlayPanelName: GamePlayPanel
   logOnceWhenTriggered: 1
 --- !u!114 &1714554833
 MonoBehaviour:
