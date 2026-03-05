@@ -10861,6 +10861,8 @@ GameObject:
   - component: {fileID: 1714554831}
   - component: {fileID: 1714554830}
   - component: {fileID: 1714554832}
+  - component: {fileID: 1714554834}
+  - component: {fileID: 1714554833}
   m_Layer: 0
   m_Name: CityGenerator
   m_TagString: Untagged
@@ -11273,6 +11275,50 @@ MonoBehaviour:
   preferredCamera: {fileID: 0}
   screenEdgePadding: 20
   logOnceWhenTriggered: 1
+--- !u!114 &1714554833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714554818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 673e16e1bd6bfe046b8ec4def1df0ec8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuWorldBackdropController
+  cityGeneratorRootName: CityGenerator
+  playerRootName: PlayerRoot
+  startPanelName: StartPanel
+  settingsPanelName: SettingsPanel
+  helpPanelName: HelpPanel
+  creditsPanelName: CreditsPanel
+  rescanInterval: 0.35
+  logStateChanges: 0
+--- !u!114 &1714554834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714554818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01b01e2f56fc6fd4ab93bcce71e3cd88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CreditsPanelRouter
+  startPanelName: StartPanel
+  settingsPanelName: SettingsPanel
+  helpPanelName: HelpPanel
+  creditsPanelName: CreditsPanel
+  pausePanelName: PausePanel
+  losePanelName: LosePanel
+  winPanelName: WinPanel
+  gameplayPanelName: GamePlayPanel
+  creditsKeyword: CREDITS
+  backKeyword: BACK
+  menuKeyword: MENU
+  logWiring: 0
 --- !u!1 &1724575354
 GameObject:
   m_ObjectHideFlags: 0

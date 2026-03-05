@@ -83,6 +83,7 @@
     <Compile Include="Assets\Scripts\PowerAudio.cs" />
     <Compile Include="Assets\Scripts\LightDecay\BlackoutCountdownPreciseUI.cs" />
     <Compile Include="Assets\Scripts\LightDecay\RepairHintPopupUI.cs" />
+    <Compile Include="Assets\Scripts\UI\MenuWorldBackdropController.cs" />
     <Compile Include="Assets\Scripts\LightDecay\SafeZoneRegistry.cs" />
     <Compile Include="Assets\Scripts\MonsterDamage.cs" />
     <Compile Include="Assets\Scripts\PowerUpSpawner.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="Assets\Scripts\TitleFlicker.cs" />
     <Compile Include="Assets\Scripts\MonsterSpawner.cs" />
     <Compile Include="Assets\Scripts\ProceduralBuildingVisual.cs" />
+    <Compile Include="Assets\Scripts\UI\CreditsPanelRouter.cs" />
     <Compile Include="Assets\Scripts\SunRise\NightEndSunriseTrigger.cs" />
     <Compile Include="Assets\Scripts\LightDecay\PowerRepairInteraction.cs" />
     <Compile Include="Assets\Scripts\SunRise\SunriseFinaleEffect.cs" />
