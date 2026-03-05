@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using TMPro;
 
 
 /// Tutorial popup that mirrors the logic of PowerRepairInteraction:
@@ -34,8 +35,12 @@ public class RepairHintPopupUI : MonoBehaviour
     public bool treatVisiblyDarkAsNotFullyLit = true;
     [Min(0f)] public float dimIntensityThreshold = 0.15f;
 
+    [Header("UI - TMP")]
+    public TMP_FontAsset tmpFont;
+    public FontStyles tmpStyle = FontStyles.Bold;
+
     [Header("UI - Text")]
-    public string messageFormat = "Press {0} to turn on the light.";
+    public string messageFormat = "Press {0} to fix the lamp post.";
     public Vector2 screenOffset = new Vector2(0f, 90f);
     public int fontSize = 28;
     public Color textColor = new Color(0.1f, 0.1f, 0.1f, 1f);
@@ -77,7 +82,7 @@ public class RepairHintPopupUI : MonoBehaviour
 
     Image _borderImage;
     Image _bgImage;
-    Text _popupText;
+    TextMeshProUGUI _popupText;
 
     Camera _cam;
     bool _loggedTriggered;
@@ -350,7 +355,7 @@ public class RepairHintPopupUI : MonoBehaviour
             _textRT.offsetMin = new Vector2(textPadding.x, textPadding.y);
             _textRT.offsetMax = new Vector2(-textPadding.z, -textPadding.w);
 
-            _popupText = textGO.AddComponent<Text>();
+            _popupText = textGO.AddComponent<TextMeshProUGUI>();
         }
         else
         {
@@ -363,16 +368,16 @@ public class RepairHintPopupUI : MonoBehaviour
             _textRT.offsetMin = Vector2.zero;
             _textRT.offsetMax = Vector2.zero;
 
-            _popupText = textGO.AddComponent<Text>();
+            _popupText = textGO.AddComponent<TextMeshProUGUI>();
         }
 
-        _popupText.alignment = TextAnchor.MiddleCenter;
+        _popupText.raycastTarget = false;
+        _popupText.font = tmpFont;               // assign in Inspector
         _popupText.fontSize = fontSize;
         _popupText.color = textColor;
-        _popupText.raycastTarget = false;
-        _popupText.font = LoadBuiltinFontSafe();
-        _popupText.horizontalOverflow = HorizontalWrapMode.Overflow;
-        _popupText.verticalOverflow = VerticalWrapMode.Overflow;
+        _popupText.fontStyle = tmpStyle;
+        _popupText.alignment = TextAlignmentOptions.Center;
+        _popupText.enableWordWrapping = false;   // you already handle wrapping via sizing logic
     }
 
     void ShowPopup(Key key)
@@ -401,7 +406,7 @@ public class RepairHintPopupUI : MonoBehaviour
             ? Mathf.Max(10f, maxPanelWidth - (enablePanel ? borderThickness * 2f : 0f) - textPadding.x - textPadding.z)
             : float.PositiveInfinity;
 
-        _popupText.horizontalOverflow = (_popupText.preferredWidth > availableForText) ? HorizontalWrapMode.Wrap : HorizontalWrapMode.Overflow;
+        _popupText.enableWordWrapping = (_popupText.preferredWidth > availableForText);
 
         Canvas.ForceUpdateCanvases();
 
@@ -541,10 +546,24 @@ public class RepairHintPopupUI : MonoBehaviour
         return null;
     }
 
+    private static Sprite _fallbackSprite;
+
     static Sprite LoadRoundedUISpriteSafe()
     {
-        try { return Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd"); } catch { }
-        try { return Resources.GetBuiltinResource<Sprite>("UI/Skin/Background.psd"); } catch { }
-        return null;
+        if (_fallbackSprite != null)
+            return _fallbackSprite;
+
+        var tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+        tex.SetPixel(0, 0, Color.white);
+        tex.Apply();
+
+        _fallbackSprite = Sprite.Create(
+            tex,
+            new Rect(0, 0, 1, 1),
+            new Vector2(0.5f, 0.5f),
+            100f
+        );
+
+        return _fallbackSprite;
     }
 }
