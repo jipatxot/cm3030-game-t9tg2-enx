@@ -8679,6 +8679,15 @@ MonoBehaviour:
 
       Repairs
       are quick, giving you more time to react.'
+      Monsters deal less damage.
+
+      AIM:
+      Keep alive until sunrise!
+
+      Use WASD to move. Press F to fix the light
+      near you.
+
+      Give a Seed to randomize map.'
     curveSpeed: 0.75
     multiplierScale: 0.85
     enemyNavSpeedMultiplier: 0.85
@@ -8697,6 +8706,13 @@ MonoBehaviour:
 
       Balance
       your movement, repairs, and survival carefully.'
+      AIM: Keep alive until sunrise!
+
+      Use
+      WASD to move. Press F to fix the light near you.
+
+      Give a Seed to randomize
+      map.'
     curveSpeed: 1
     multiplierScale: 1
     enemyNavSpeedMultiplier: 1
@@ -8715,6 +8731,10 @@ MonoBehaviour:
 
       Careful
       planning and quick reactions are essential.'
+      Use WASD to move. Press F to fix the light
+      near you.
+
+      Give a Seed to randomize map.'
     curveSpeed: 1.35
     multiplierScale: 1.2
     enemyNavSpeedMultiplier: 1.2
