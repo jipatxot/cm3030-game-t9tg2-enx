@@ -56,7 +56,7 @@ public class AudioManager : MonoBehaviour
 
     private AudioSource sfxSource;
 
-// Stores a background audio clip and its volume for ambient and music tracks
+// Stores a background audio clip and its volume for ambient track
     [Serializable]
     public struct BackgroundSound
     {
@@ -66,10 +66,6 @@ public class AudioManager : MonoBehaviour
 
     [Header("Ambient")] public BackgroundSound ambient;
     private AudioSource ambientSource;
-
-    [Header("Music")] public BackgroundSound calmMusic;
-    public BackgroundSound intenseMusic;
-    private AudioSource musicSource;
 
     private void Awake()
     {
@@ -95,7 +91,6 @@ public class AudioManager : MonoBehaviour
         if (ambient.clip != null)
         {
             ambientSource.clip = ambient.clip;
-            ambientSource.Play();
         }
     }
 
@@ -136,16 +131,16 @@ public class AudioManager : MonoBehaviour
 
     public void PauseMusic(bool pause)
     {
-        if (musicSource != null)
-        {
-            if (pause) musicSource.Pause();
-            else musicSource.UnPause();
-        }
-
         if (ambientSource != null)
         {
             if (pause) ambientSource.Pause();
-            else ambientSource.UnPause();
+            else
+            {
+                if (!ambientSource.isPlaying && ambientSource.clip != null)
+                    ambientSource.Play();
+                else
+                    ambientSource.UnPause();
+            }
         }
     }
 }
