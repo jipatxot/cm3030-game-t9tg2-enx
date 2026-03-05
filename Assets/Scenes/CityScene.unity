@@ -8679,15 +8679,6 @@ MonoBehaviour:
 
       Repairs
       are quick, giving you more time to react.'
-      Monsters deal less damage.
-
-      AIM:
-      Keep alive until sunrise!
-
-      Use WASD to move. Press F to fix the light
-      near you.
-
-      Give a Seed to randomize map.'
     curveSpeed: 0.75
     multiplierScale: 0.85
     enemyNavSpeedMultiplier: 0.85
@@ -8695,24 +8686,18 @@ MonoBehaviour:
     repairDurationSeconds: 0
     monsterDamagePerSecond: 0.5
   medium:
-    description: 'The intended gameplay experience.
+    description: 'Normal.
 
 
+      Lights dim at a steady pace.
 
-      Lights dim at a steady
-      pace and enemies behave normally.
+      Enemies move
+      at normal speed.
 
-      Repairs require attention and timing.
+      Repairs require some time.
 
-      Balance
-      your movement, repairs, and survival carefully.'
-      AIM: Keep alive until sunrise!
-
-      Use
-      WASD to move. Press F to fix the light near you.
-
-      Give a Seed to randomize
-      map.'
+      Monsters deal moderate
+      damage.'
     curveSpeed: 1
     multiplierScale: 1
     enemyNavSpeedMultiplier: 1
@@ -8720,21 +8705,17 @@ MonoBehaviour:
     repairDurationSeconds: 0
     monsterDamagePerSecond: 1
   high:
-    description: 'A challenging survival experience.
+    description: 'Hard.
 
 
+      Lights fade quickly.
 
-      Lights fade quickly
-      and repairs take longer.
+      Enemies move faster.
 
-      Enemies move faster and deal more damage.
+      Repairs
+      take longer.
 
-      Careful
-      planning and quick reactions are essential.'
-      Use WASD to move. Press F to fix the light
-      near you.
-
-      Give a Seed to randomize map.'
+      Monsters deal heavy damage.'
     curveSpeed: 1.35
     multiplierScale: 1.2
     enemyNavSpeedMultiplier: 1.2
@@ -10204,6 +10185,10 @@ GameObject:
   - component: {fileID: 1639656870}
   - component: {fileID: 1639656869}
   - component: {fileID: 1639656871}
+  - component: {fileID: 1639656873}
+  - component: {fileID: 1639656872}
+  - component: {fileID: 1639656875}
+  - component: {fileID: 1639656874}
   m_Layer: 5
   m_Name: StartPanel
   m_TagString: Untagged
@@ -10289,6 +10274,89 @@ MonoBehaviour:
   startPanel: {fileID: 1639656867}
   settingsPanel: {fileID: 164007493}
   helpPanel: {fileID: 831290099}
+--- !u!114 &1639656872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639656867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36543526235ba9246a73765853e33896, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RestoreMenuLightingOnEnable
+  restoreLightingSnapshot: 1
+  stopSunriseEffects: 1
+  destroyRuntimeSunObjects: 1
+  logOnEnable: 0
+--- !u!114 &1639656873
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639656867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eaea6fde4821b4c4baa7610485d1d9e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuLightingSnapshot
+  captureOnAwake: 1
+  dontDestroyOnLoad: 0
+  logOnCapture: 0
+  logOnRestore: 0
+--- !u!114 &1639656874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639656867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fadd186eb439ee848836640a7f0bfcbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RestoreMenuVisualsOnEnable
+  restoreSnapshot: 1
+  stopAllSunriseEffects: 1
+  destroyRuntimeSuns: 1
+  destroySunriseOverlayObjects: 1
+  forceHideGameplayPanels: 1
+  hideWorldBehindMenu: 1
+  cityGeneratorRootName: CityGenerator
+  playerRootName: 
+  disableSkyControllersOnMenu: 0
+  skyControllerTypeKeywords:
+  - CartoonSky
+  - OldStyle
+  - TimeOfDay
+  - DayNight
+  - SkyController
+  - SkyManager
+  logOnEnable: 0
+--- !u!114 &1639656875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639656867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a863e0abe09c2704e82fa285ac70469f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuVisualSnapshot
+  captureOnAwake: 1
+  captureSkyRenderers: 1
+  skyShaderKeywords:
+  - Sky
+  - Cartoon
+  - Toon
+  - Atmos
+  - Cloud
+  logOnCapture: 0
+  logOnRestore: 0
 --- !u!1 &1641119741
 GameObject:
   m_ObjectHideFlags: 0
