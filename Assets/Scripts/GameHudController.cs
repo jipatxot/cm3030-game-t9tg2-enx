@@ -49,6 +49,7 @@ public class GameHudController : MonoBehaviour
 
     [Header("Light bar")]
     public Image lightFill;
+    public TMP_Text lightPercentText;
 
     [Header("Controls overlay")]
     public TMP_Text fixKeyText;
@@ -345,13 +346,19 @@ public class GameHudController : MonoBehaviour
 
     void UpdateLightBar()
     {
-        if (lightFill == null) return;
+        if (lightFill == null && lightPercentText == null) return;
 
         float v = 1f;
         if (powerManager != null)
             v = powerManager.GetAverageLampPower01();
 
-        lightFill.fillAmount = Mathf.Clamp01(v);
+        v = Mathf.Clamp01(v);
+
+        if (lightFill != null)
+            lightFill.fillAmount = v;
+
+        if (lightPercentText != null)
+            lightPercentText.text = Mathf.RoundToInt(v * 100f) + "%";
     }
 
     void UpdateControlsText()
