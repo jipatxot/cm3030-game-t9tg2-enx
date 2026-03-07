@@ -1584,8 +1584,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 20
+  m_fontSizeBase: 20
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2818,7 +2818,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Enter seed for city size
+  m_text: Enter seed for city layout
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 59a436d94ec854647b6593cf781a1cbb, type: 2}
   m_sharedMaterial: {fileID: 7637763994073421521, guid: 59a436d94ec854647b6593cf781a1cbb, type: 2}
@@ -4343,8 +4343,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 14
-  m_fontSizeBase: 14
+  m_fontSize: 23
+  m_fontSizeBase: 23
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -5583,8 +5583,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 14
-  m_fontSizeBase: 14
+  m_fontSize: 23
+  m_fontSizeBase: 23
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -6445,7 +6445,7 @@ MonoBehaviour:
   m_Placeholder: {fileID: 0}
   m_ItemText: {fileID: 1108517802}
   m_ItemImage: {fileID: 0}
-  m_Value: 0
+  m_Value: 2
   m_MultiSelect: 0
   m_Options:
     m_Options:
@@ -7590,7 +7590,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 0.5 min
+  m_text: 3 Min
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 59a436d94ec854647b6593cf781a1cbb, type: 2}
   m_sharedMaterial: {fileID: 7637763994073421521, guid: 59a436d94ec854647b6593cf781a1cbb, type: 2}
@@ -8712,10 +8712,10 @@ MonoBehaviour:
       are quick, giving you more time to react.'
     curveSpeed: 0.75
     multiplierScale: 0.85
-    enemyNavSpeedMultiplier: 0.85
-    enemyAnimSpeedMultiplier: 0.9
+    enemyNavSpeedMultiplier: 1
+    enemyAnimSpeedMultiplier: 1
     repairDurationSeconds: 0
-    monsterDamagePerSecond: 0.5
+    monsterDamagePerSecond: 1
   medium:
     description: 'Normal.
 
@@ -8731,10 +8731,10 @@ MonoBehaviour:
       damage.'
     curveSpeed: 1
     multiplierScale: 1
-    enemyNavSpeedMultiplier: 1
-    enemyAnimSpeedMultiplier: 1
+    enemyNavSpeedMultiplier: 1.2
+    enemyAnimSpeedMultiplier: 1.15
     repairDurationSeconds: 0
-    monsterDamagePerSecond: 1
+    monsterDamagePerSecond: 2
   high:
     description: 'Hard.
 
@@ -8749,10 +8749,10 @@ MonoBehaviour:
       Monsters deal heavy damage.'
     curveSpeed: 1.35
     multiplierScale: 1.2
-    enemyNavSpeedMultiplier: 1.2
-    enemyAnimSpeedMultiplier: 1.15
+    enemyNavSpeedMultiplier: 1.4
+    enemyAnimSpeedMultiplier: 1.25
     repairDurationSeconds: 0.75
-    monsterDamagePerSecond: 2
+    monsterDamagePerSecond: 3
 --- !u!4 &1442250327
 Transform:
   m_ObjectHideFlags: 0
@@ -10226,7 +10226,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1639656868
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11043,7 +11043,7 @@ MonoBehaviour:
   trafficLightPrefab: {fileID: 6907267057854836807, guid: 6091c849fce86f447b14606d3fb842c4, type: 3}
   zebraCrossingPrefab: {fileID: 5773736274731465902, guid: e3a9c12e8a72d4d419757708f355c75c, type: 3}
   clearBeforeSpawn: 1
-  lampChance: 0.75
+  lampChance: 0.8
   lampSpacingTiles: 18
   lampSideOffset: 0.65
   lampYOffset: 0.02
@@ -11089,7 +11089,7 @@ MonoBehaviour:
   roads: {fileID: 1714554821}
   monsterPrefab: {fileID: 2547632407910942000, guid: af9f138ca1214ae41beb955d1406704e, type: 3}
   monstersRoot: {fileID: 1926172472}
-  monsterCount: 8
+  monsterCount: 14
   monsterScale: 0.25
   scaleNavMeshAgent: 1
   attemptsPerMonster: 80
@@ -11112,7 +11112,7 @@ MonoBehaviour:
   buildingsRoot: {fileID: 2031563627}
   buildingPrefab: {fileID: 3162544653070869956, guid: 5d003bfdbf1d14e4fbaf7f5b7970eb97, type: 3}
   buildChance: 0.3
-  maxBuildings: 300
+  maxBuildings: 350
   scanStep: 1
   clearBeforeSpawn: 1
   sidewalkInsetWorld: 0.25
@@ -12015,8 +12015,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 20
+  m_fontSizeBase: 20
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

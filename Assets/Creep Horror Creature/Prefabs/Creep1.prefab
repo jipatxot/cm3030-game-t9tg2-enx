@@ -72,7 +72,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3
+  m_Speed: 4
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 540
@@ -100,13 +100,13 @@ MonoBehaviour:
   maxWait: 1.6
   minWanderRadius: 6
   maxWanderRadius: 18
-  chaseRange: 12
-  loseRange: 15
+  chaseRange: 27
+  loseRange: 30
   chaseRepathSeconds: 0.3
   stopChasingInSafeZone: 1
-  usePrediction: 1
+  usePrediction: 0
   predictTime: 0.45
-  maxPredictDistance: 2
+  maxPredictDistance: 6
   litAreaName: Lit
   sampleRadius: 2
   attempts: 25
@@ -136,7 +136,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2455f59d9674b5d4abf86c55305b0035, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MonsterDamage
-  damagePerTick: 1
+  damagePerTick: 2
   damageInterval: 1
   attackRange: 1.4
 --- !u!114 &-6240820310352050275
