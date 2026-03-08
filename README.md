@@ -1,22 +1,50 @@
-# cm3030-game-t9tg2-enx
-
+cm3030-game-t9tg2-enx
 Github Repo for cm3030-game-t9tg2-enx Game Development using Unity 6
-
 PLEASE LET'S MAKE SURE ONLY ONE PERSON EDITS CityScene at a time
+Project Plan Checklist (Weeks 1–12)
 
-## Project Plan Checklist (Weeks 1–12)
 
-| Week | Phase   | Juan (Lead/Code)                                                  | Dianshi (Systems)                                      | Agata (Design/UI)                                                                                  | Ionut (Assets)                                                                                                                                                                                                                                          |
-| ---- | ------- | ----------------------------------------------------------------- |--------------------------------------------------------| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Setup   | - [X] Set up GitHub repository<br>- [X] Implement player movement | - [X] Work on "Power Decay" timer logic                | - [X] Sketch the city layout<br>- [X] Set up the Unity Scene                                       | - [X] Search for free sprite packs (city/enemy) comment: buildings and city randomly generated from in house elements, monsters also<br>- [X] Search for free sprite packs (player/city decoration)<br>- [X] Find sound effects (clicks, ambience hums) |
-| 2    | Core    | - [JP 2/2] Work on interaction mechanics (turning lights on/off)       | - [X] Work on "Game State" (active vs. game over)      | - [X] Build the basic level<br>- [X] Implement camera logic                                        | - [X] Configure lighting settings (shadows/colors)                                                                                                                                                                                                      |
-| 3    | Enemies | - [JP 2/2] Work on player health and damage logic                      | - [X] Work on enemy spawning logic (where they appear) | - [X] Start/Pause game UI<br>- [X] Design HUD assets<br>- [X] Implement UI manager (health bars)   | - [X] Import sprites<br>- [X] Set up animations                                                                                                                                                                                                         |
-| 4    | Review  | - [X] Feedback and group review                                   | - [X] Feedback and group review                        | - [X] Feedback and group review                                                                    | - [X] Feedback and group review                                                                                                                                                                                                                         |
-| 5    | Logic   | - [X] Connect UI bars to player health logic                      | - [X] Work on basic enemy movement (chasing player)    | - [X] Place buildings into the final scene                                                         | - [X] Implement audio manager (play sounds on events)                                                                                                                                                                                                   |
-| 6    | Buffer  | - [X] Downtime / Catch-up                                         | - [X] Downtime / Catch-up                              | - [X] Downtime / Catch-up                                                                          | - [X] Downtime / Catch-up                                                                                                                                                                                                                               |
-| 7    | Flow    | - [X] Work on "Sunrise" (win) and "Death" (lose) events           | - [X] Implement difficulty scaling (decay speeds up)   | - [X] Create title, pause and credit screens                                                       | - [X] Add final lighting effects (glow/atmosphere)                                                                                                                                                                                                      |
-| 8    | Polish  | - [X] Adjust movement speed and feel                              | - [X] Adjust enemy speed and aggression                | - [X] Add city details (props/decorations) comment: trees, crossings added but need more detailing | - [X] Adjust sound volumes (balance music/SFX)                                                                                                                                                                                                          |
-| 9    | Testing | - [X] Group playtesting                                           | - [X] Group playtesting                                | - [X] Group playtesting                                                                            | - [X] Group playtesting                                                                                                                                                                                                                                 |
-| 10   | Fixes   | - [X] Fix movement bugs found in testing                          | - [X] Adjust difficulty based on testing               | - [X] Fix UI bugs found in testing                                                                 | - [X] Add final sound effects (clicks/buttons)                                                                                                                                                                                                          |
-| 11   | Final   | - [X] Final code cleanup                                          | - [X] Final check of all scripts                       | - [X] Final check of scene/level                                                                   | - [X] Check asset licenses<br>- [X] Create credits list                                                                                                                                                                                                 |
-| 12   | Submit  | - [X] Submission                                                  | - [X] Submission                                       | - [X] Submission                                                                                   | - [X] Submission                                                                                                                                                                                                                                        |
+Final Submission
+[IONUT] Web GL Submission
+[ALL] Game Project Documentation: INDIVIDUAL
+
+COMPLETED
+[JUAN] Set up GitHub repository
+[IONUT] Sketch the city layout
+[IONUT] Set up the Unity Scene
+[IONUT] Search for free sprite packs (city/enemy) comment: buildings and city randomly generated from in house elements, monsters also
+[IONUT] Implement camera logic
+[IONUT] Work on enemy spawning logic (where they appear)
+[IONUT] Start/Pause game
+[IONUT] Place buildings into the final scene
+[IONUT] Add city details (props/decorations) comment: trees, crossings added but need more detailing
+[JUAN] Work on player health and damage logic
+[DIANSHI] Work on interaction mechanics (turning lights on/off)
+[JUAN] Implement player dynamics
+[JUAN] GitHub maintenance
+[DIANSHI] Differentiate lights turning off at different time intervals
+[JUAN & IONUT] Design HUD assets
+[JUAN & IONUT] Implement UI manager (health bars)
+[IONUT] Connect UI bars to player health logic
+[JUAN] Work on basic enemy movement (chasing player)
+[DIANSHI] Implement difficulty scaling (decay speeds up)
+[DIANSHI] Work on "Sunrise" (win)
+[IONUT] Work on "Game State" (active vs. game over)
+[IONUT] Build the basic level
+[DIANSHI] Configure lighting settings (shadows/colors)
+[IONUT] Work on "Power Decay" timer logic
+[JUAN & IONUT] Set up animations (Unity store might have a player character with animations already)
+[JUAN] Implement city limit to prevent trespassing
+[DIANSHI] Add final lighting effects (glow/atmosphere)
+[IONUT] Create credit screen
+[IONUT] Work on  "Death" (lose) events
+[AGATA] Implement audio script (play sounds on events)
+[AGATA] Find sound effects (clicks, ambience hums)
+[JUAN] Polishing Main Menu UI and adding 'feedback' to testing log
+[IONUT] Polishing interaction between player and light (making repair more obvious, making dimming more obvious)
+[AGATA] Polishing audio
+[DIANSHI] Add tutorial mechanics (pop-ups, guiding arrows for the first light repair, messages, make it more gamer friendly)
+[JUAN] Polishing Main Menu UI and adding 'feedback' to testing log
+[IONUT] Polishing interaction between player and light (making repair more obvious, making dimming more obvious)
+[AGATA] Polishing audio
+[DIANSHI] Add tutorial mechanics (pop-ups, guiding arrows for the first light repair, messages, make it more gamer friendly)
